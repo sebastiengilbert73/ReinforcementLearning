@@ -6,13 +6,11 @@ class Solver:
                  numberOfStates,
                  numberOfActions,
                  gamma,
-                 evaluator,# Must implement .Evaluate(state)
                  environment, # Must implement .Set(state), .Step(action)
                  ):
         self.numberOfStates = numberOfStates
         self.numberOfActions = numberOfActions
         self.gamma = gamma
-        self.evaluator = evaluator
         self.environment = environment
         self.policy = numpy.zeros(numberOfStates, dtype=int)
         self.value = numpy.zeros(numberOfStates, dtype=int)
@@ -27,7 +25,7 @@ class Solver:
             newState, reward, done, info = self.environment.Step(action)
             value = reward + self.gamma * self.value[newState]
             if value > highestValue:
-                highestValue = value;
+                highestValue = value
                 bestAction = action
         return bestAction
 
