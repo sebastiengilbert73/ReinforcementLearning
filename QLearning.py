@@ -10,6 +10,7 @@ class Solver:
                  environment,  # Must implement .Step(action), .Reset()
                  defaultValue, # Fill value for the Q matrix. It should be higher than the penalty given by the environment for a neutral move, in order to favor exploration of unseen cases
                  epsilonRampDownNumberOfEpisodes,
+                 epsilonFinalValue,
                  ):
         self.numberOfObservations = numberOfObservations
         self.numberOfActions = numberOfActions
@@ -20,6 +21,7 @@ class Solver:
         self.Q.fill(defaultValue)
         self.epsilon = 1.0
         self.epsilonRampDownNumberOfEpisodes = epsilonRampDownNumberOfEpisodes
+        self.epsilonFinalValue = epsilonFinalValue
 
     def BestAction(self, observation):
         bestAction = numpy.argmax(self.Q[observation])
@@ -50,4 +52,5 @@ class Solver:
             if writeToConsole:
                 print ("{}. rewardSum = {}".format(episode, rewardSum))
             # Update epsilon
-            self.epsilon = max(1.0 - episode/self.epsilonRampDownNumberOfEpisodes, 0.0)
+            self.epsilon = max(1.0 + (self.epsilonFinalValue - 1)/self.epsilonRampDownNumberOfEpisodes * episode, self.epsilonFinalValue)
+
