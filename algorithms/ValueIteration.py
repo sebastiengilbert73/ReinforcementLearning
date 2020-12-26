@@ -6,14 +6,16 @@ class Solver:
                  numberOfStates,
                  numberOfActions,
                  gamma,
-                 environment, # Must implement .Set(state), .Step(action)
+                 environment, # Must implement .Set(state): use env.env.s, .Step(action)
+                 valueFill,
                  ):
         self.numberOfStates = numberOfStates
         self.numberOfActions = numberOfActions
         self.gamma = gamma
         self.environment = environment
         self.policy = numpy.zeros(numberOfStates, dtype=int)
-        self.value = numpy.zeros(numberOfStates, dtype=int)
+        self.value = numpy.zeros(numberOfStates, dtype=float)
+        self.value.fill(valueFill)
 
 
     def BestAction(self, state):
