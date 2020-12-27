@@ -58,7 +58,3 @@ class Solver:
                 break
         return self.policy, self.value
 
-
-"""class PolicyEvaluator:
-    def __init__(self, states_set, ):
-"""
