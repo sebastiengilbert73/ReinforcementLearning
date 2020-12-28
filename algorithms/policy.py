@@ -1,5 +1,6 @@
 import abc
 import random
+import copy
 
 class Policy(abc.ABC):
     """ Abstract class that selects an action from a state """
@@ -38,11 +39,12 @@ class Random(Policy):
 
 class EpsilonGreedy(Policy):
     def __init__(self, state_to_value_dict, legal_actions_authority,
-                 environment, epsilon=0.1, number_of_trials_per_action=1):
+                 environment, epsilon=0.1, gamma=0.9, number_of_trials_per_action=1):
         super().__init__(legal_actions_authority)
-        self.state_to_value_dict = state_to_value_dict
-        self.environment = environment
+        self.state_to_value_dict = copy.deepcopy(state_to_value_dict)  # To avoid unintentional interference
+        self.environment = copy.deepcopy(environment)  # To avoid unintentional interference
         self.epsilon = epsilon
+        self.gamma = gamma
         self.number_of_trials_per_action = max(number_of_trials_per_action, 1)
 
     def Select(self, state):
@@ -60,7 +62,7 @@ class EpsilonGreedy(Policy):
             for trialNdx in range(self.number_of_trials_per_action):
                 self.environment.SetState(state)
                 new_state, reward, done, info = self.environment.step(candidate_action)
-                average_value += reward + self.state_to_value_dict[new_state]
+                average_value += reward + self.gamma * self.state_to_value_dict[new_state]
             average_value = average_value/self.number_of_trials_per_action
             if average_value > highest_value:
                 highest_value = average_value
