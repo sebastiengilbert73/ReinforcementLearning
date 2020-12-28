@@ -55,6 +55,7 @@ def main():
             legal_actions_authority=legal_actions_authority,
             environment=environment,
             epsilon=args.epsilon,
+            gamma=args.gamma,
             number_of_trials_per_action=args.numberOfTrialsPerAction
         )
     else:
