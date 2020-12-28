@@ -5,7 +5,7 @@ import numpy as np
 
 
 class GridWorld1(gym.Env):  # Cf. ''Reinforcement Learning', Sutton and Barto, p.71
-    # Class structured inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
+    # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     metadata = {
         'render.modes': ['human']
     }
@@ -90,9 +90,12 @@ class GridWorld1(gym.Env):  # Cf. ''Reinforcement Learning', Sutton and Barto, p
             raise ValueError("GridWorld1.SetState(): index {} is out of range [0, 24]".format(index))
         self.state = index
 
+    def ActionsSet(self):
+        return set(range(4))
+
 
 class GridWorld2x2(gym.Env):  # Random policy, gamma=0.9: values: V0 = 7.316; V1 = 2.573; V2 = 2.573; V3 = 1.196
-    # Class structured inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
+    # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     metadata = {
         'render.modes': ['human']
     }
@@ -173,3 +176,6 @@ class GridWorld2x2(gym.Env):  # Random policy, gamma=0.9: values: V0 = 7.316; V1
         if index < 0 or index > 3:
             raise ValueError("GridWorld2x2.SetState(): index {} is out of range [0, 3]".format(index))
         self.state = index
+
+    def ActionsSet(self):
+        return set(range(4))
