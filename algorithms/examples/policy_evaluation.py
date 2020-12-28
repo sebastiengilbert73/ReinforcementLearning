@@ -58,6 +58,8 @@ def main():
             gamma=args.gamma,
             number_of_trials_per_action=args.numberOfTrialsPerAction
         )
+    elif args.policy.lower() == 'gridworld1optimalpolicy':
+        evaluated_policy = gridworld1.GridWorld1OptimalPolicy()
     else:
         raise NotImplementedError("main(): Not implemented policy '{}'".format(args.policy))
 
