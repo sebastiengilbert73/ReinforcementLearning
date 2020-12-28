@@ -2,9 +2,10 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 import numpy as np
+import random
 
 
-class GridWorld1(gym.Env):  # Cf. ''Reinforcement Learning', Sutton and Barto, p.71
+class GridWorld1(gym.Env):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     metadata = {
         'render.modes': ['human']
@@ -186,3 +187,31 @@ class GridWorld2x2(gym.Env):
 
     def ActionsSet(self):
         return set(range(4))
+
+
+
+""" 
+Optimal policies, to match 'Reinforcement Learning', Sutton and Barto, p. 79
+"""
+class GridWorld1OptimalPolicy():
+    def __init__(self):
+        pass
+
+    def Select(self, state):
+        actions_dict = {'north': 0, 'south': 1, 'east': 2, 'west': 3}
+        if state == 0 or state == 3:
+            return 2
+        elif state == 1:
+            return random.choice(list(actions_dict.values()))
+        elif state == 2 or state == 4 or state == 8 or state == 9:
+            return 3
+        elif state == 6 or state == 11 or state == 16 or state == 21:
+            return 0
+        elif state == 5 or state == 10 or state == 15 or state == 20:
+            return random.choice([0, 2])
+        elif state == 7 or state == 12 or state == 13 or state == 14 or \
+            state == 17 or state == 18 or state == 19 or state == 22 or \
+            state == 23 or state == 24:
+            return random.choice([0, 3])
+        else:
+            raise ValueError("GridWorld1OptimalPolicy.Select(): State {} out of range".format(state))
