@@ -94,8 +94,15 @@ class GridWorld1(gym.Env):  # Cf. ''Reinforcement Learning', Sutton and Barto, p
         return set(range(4))
 
 
-class GridWorld2x2(gym.Env):  # Random policy, gamma=0.9: values: V0 = 7.316; V1 = 2.573; V2 = 2.573; V3 = 1.196
+class GridWorld2x2(gym.Env):
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
+    # Random policy, gamma=0.9:
+    #       final exact values:     V0 = 7.316; V1 = 2.573; V2 = 2.573; V3 = 1.196
+    # Epsilon-greedy:
+    #   gamma=0.9, epsilon=0.1, initial values: V0 = V1 = V2 = V3
+    #       final exact values:     V0 = 14.912, V1 = 11.013, V2 = 11.013, V3 = 9.808
+    #   gamma=0.9, epsilon=0, initial values: V0 = V1 = V2 = V3
+    #       final exact values:     V0 = 15.658, V1 = 11.842, V2 = 11.842, V3 = 10.658
     metadata = {
         'render.modes': ['human']
     }
