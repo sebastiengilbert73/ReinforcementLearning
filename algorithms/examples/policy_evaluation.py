@@ -6,6 +6,7 @@ from ReinforcementLearning.environments import gridworld1
 import random
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
 parser.add_argument('--environment', help="The environment to use. Default: 'gridworld1'", default='gridworld1')
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
 parser.add_argument('--policy', help="The policy. Default: 'random'", default='random')
@@ -14,7 +15,8 @@ parser.add_argument('--minimumChange', help="The minimum value change to keep it
 parser.add_argument('--numberOfSelectionsPerState', help="The number of tried selections per state. Should be 1 for deterministic policies. Default: 100", type=int, default=100)
 parser.add_argument('--maximumNumberOfIterations', help="The maximum number of iterations. Default: 1000", type=int, default=1000)
 parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
-parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
+parser.add_argument('--epsilon', help="For epsilon-greedy policies, the probability of choosing a random action. Default: 0.1", type=float, default=0.1)
+parser.add_argument('--numberOfTrialsPerAction', help="The number of trials per action. For deterministic environments, should be 1. Default: 1", type=int, default=1)
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s [%(levelname)s] %(message)s')
@@ -45,6 +47,16 @@ def main():
     evaluated_policy = None
     if args.policy.lower() == 'random':
         evaluated_policy = policy.Random(legal_actions_authority)
+    elif args.policy.lower() == 'epsilongreedy':
+        states_set = environment.StatesSet()
+        state_to_value_dict = {s: args.initialValue for s in states_set}
+        evaluated_policy = policy.EpsilonGreedy(
+            state_to_value_dict=state_to_value_dict,
+            legal_actions_authority=legal_actions_authority,
+            environment=environment,
+            epsilon=args.epsilon,
+            number_of_trials_per_action=args.numberOfTrialsPerAction
+        )
     else:
         raise NotImplementedError("main(): Not implemented policy '{}'".format(args.policy))
 
