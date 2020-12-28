@@ -36,6 +36,39 @@ class Random(Policy):
         legal_actions_set = self.legal_actions_authority.LegalActions(state)
         return random.choice(list(legal_actions_set))
 
+class EpsilonGreedy(Policy):
+    def __init__(self, state_to_value_dict, legal_actions_authority,
+                 environment, epsilon=0.1, number_of_trials_per_action=1):
+        super().__init__(legal_actions_authority)
+        self.state_to_value_dict = state_to_value_dict
+        self.environment = environment
+        self.epsilon = epsilon
+        self.number_of_trials_per_action = max(number_of_trials_per_action, 1)
+
+    def Select(self, state):
+        legal_actions_set = self.legal_actions_authority.LegalActions(state)
+        if len(legal_actions_set) == 0:
+            return None
+        random_0to1 = random.random()
+        if random_0to1 < self.epsilon:  # Random choice
+            return random.choice(list(legal_actions_set))
+        # Greedy choice
+        highest_value = float('-inf')
+        selected_actions_list = []
+        for candidate_action in legal_actions_set:
+            average_value = 0
+            for trialNdx in range(self.number_of_trials_per_action):
+                self.environment.SetState(state)
+                new_state, reward, done, info = self.environment.step(candidate_action)
+                average_value += reward + self.state_to_value_dict[new_state]
+            average_value = average_value/self.number_of_trials_per_action
+            if average_value > highest_value:
+                highest_value = average_value
+                selected_actions_list = [candidate_action]
+            elif average_value == highest_value:
+                selected_actions_list.append(candidate_action)
+        return random.choice(selected_actions_list)
+
 class PolicyEvaluator:
     def __init__(self, environment, gamma=0.9, minimum_change=0.01,
                  number_of_selections_per_state=1,
