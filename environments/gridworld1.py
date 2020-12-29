@@ -201,41 +201,37 @@ class GridWorld1OptimalPolicy(rl_policy.Policy):
         legal_actions_authority = rl_policy.AllActionsLegalAuthority(set(range(4)))
         super().__init__(legal_actions_authority)
 
-    def Select(self, state):
-        #actions_dict = {'north': 0, 'south': 1, 'east': 2, 'west': 3}
-        actions_set = self.legal_actions_authority.LegalActions(state)
-        if state == 0 or state == 3:
-            return 2
-        elif state == 1:
-            return random.choice(list(actions_set))
-        elif state == 2 or state == 4 or state == 8 or state == 9:
-            return 3
-        elif state == 6 or state == 11 or state == 16 or state == 21:
-            return 0
-        elif state == 5 or state == 10 or state == 15 or state == 20:
-            return random.choice([0, 2])
-        elif state == 7 or state == 12 or state == 13 or state == 14 or \
-            state == 17 or state == 18 or state == 19 or state == 22 or \
-            state == 23 or state == 24:
-            return random.choice([0, 3])
+    def ActionProbabilities(self, state):
+        if state == 0:
+            return {0: 0, 1: 0, 2: 1, 3: 0}
+        elif state in [1, 3]:
+            return {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25}
+        elif state in [2, 4, 8, 9]:
+            return {0: 0, 1: 0, 2: 0, 3: 1}
+        elif state in [5, 10, 15, 20]:
+            return {0: 0.5, 1: 0, 2: 0.5, 3: 0}
+        elif state in [6, 11, 16, 21]:
+            return {0: 1, 1: 0, 2: 0, 3: 0}
+        elif state in [7, 12, 13, 14, 17, 18, 19, 22, 23, 24]:
+            return {0: 0.5, 1: 0, 2: 0, 3: 0.5}
         else:
-            raise ValueError("GridWorld1OptimalPolicy.Select(): State {} out of range".format(state))
+            raise ValueError("GridWorld1OptimalPolicy.ActionProbabilities(): State {} out of range".format(state))
 
 class GridWorld2x2OptimalPolicy(rl_policy.Policy):
     def __init__(self):
         legal_actions_authority = rl_policy.AllActionsLegalAuthority(set(range(4)))
         super().__init__(legal_actions_authority)
 
-    def Select(self, state):
+    def ActionProbabilities(self, state):
+        action_to_probability_dict = {}
         actions_set = self.legal_actions_authority.LegalActions(state)
         if state == 0:
-            return random.choice(list(actions_set))
+            return {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25}
         elif state == 1:
-            return 3
+            return {0: 0, 1: 0, 2: 0, 3: 1}
         elif state == 2:
-            return 0
+            return {0: 1, 1: 0, 2: 0, 3: 0}
         elif state == 3:
-            return random.choice([0, 3])
+            return {0: 0.5, 1: 0, 2: 0, 3: 0.5}
         else:
-            raise ValueError("GridWorld2x2OptimalPolicy.Select(): state {} is out of range [0, 3]".format(state))
-
+            raise ValueError("GridWorld2x2OptimalPolicy.ActionProbabilities(): state {} is out of range [0, 3]".format(state))
