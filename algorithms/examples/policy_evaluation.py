@@ -60,6 +60,8 @@ def main():
         )
     elif args.policy.lower() == 'gridworld1optimalpolicy':
         evaluated_policy = gridworld1.GridWorld1OptimalPolicy()
+    elif args.policy.lower() == 'gridworld2x2optimalpolicy':
+        evaluated_policy = gridworld1.GridWorld2x2OptimalPolicy()
     else:
         raise NotImplementedError("main(): Not implemented policy '{}'".format(args.policy))
 
