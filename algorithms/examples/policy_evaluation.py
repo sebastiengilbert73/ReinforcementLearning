@@ -3,6 +3,7 @@ import argparse
 import ReinforcementLearning.algorithms.policy as policy
 import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
+from ReinforcementLearning.environments import jacks_car_rental
 import random
 
 parser = argparse.ArgumentParser()
@@ -32,6 +33,8 @@ def main():
         environment = gridworlds.GridWorld1()
     elif args.environment.lower() == 'gridworld2x2':
         environment = gridworlds.GridWorld2x2()
+    elif args.environment.lower() == 'jackscarrental':
+        environment = jacks_car_rental.JacksCarRental()
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 
@@ -40,6 +43,8 @@ def main():
     legal_actions_authority = None
     if args.legalActionsAuthority.lower() == 'allactionslegal':
         legal_actions_authority = policy.AllActionsLegalAuthority(actions_set)
+    elif args.legalActionsAuthority.lower() == 'jackspossiblemoves':
+        legal_actions_authority = jacks_car_rental.JacksPossibleMoves()
     else:
         raise NotImplementedError("main(): Not implemented legal actions authority '{}'".format(args.legalActionsAuthority))
 
