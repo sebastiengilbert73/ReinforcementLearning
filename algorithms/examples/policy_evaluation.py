@@ -2,7 +2,7 @@ import logging
 import argparse
 import ReinforcementLearning.algorithms.policy as policy
 import ReinforcementLearning.environments as environments
-from ReinforcementLearning.environments import gridworld1
+from ReinforcementLearning.environments import gridworlds
 import random
 
 parser = argparse.ArgumentParser()
@@ -29,9 +29,9 @@ def main():
     # It must implement gym.Env, ActionsSet(), StatesSet(), SetState(s)
     environment = None
     if args.environment.lower() == 'gridworld1':
-        environment = gridworld1.GridWorld1()
+        environment = gridworlds.GridWorld1()
     elif args.environment.lower() == 'gridworld2x2':
-        environment = gridworld1.GridWorld2x2()
+        environment = gridworlds.GridWorld2x2()
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 
@@ -59,9 +59,9 @@ def main():
             number_of_trials_per_action=args.numberOfTrialsPerAction
         )
     elif args.policy.lower() == 'gridworld1optimalpolicy':
-        evaluated_policy = gridworld1.GridWorld1OptimalPolicy()
+        evaluated_policy = gridworlds.GridWorld1OptimalPolicy()
     elif args.policy.lower() == 'gridworld2x2optimalpolicy':
-        evaluated_policy = gridworld1.GridWorld2x2OptimalPolicy()
+        evaluated_policy = gridworlds.GridWorld2x2OptimalPolicy()
     else:
         raise NotImplementedError("main(): Not implemented policy '{}'".format(args.policy))
 
