@@ -3,6 +3,7 @@ from gym import spaces
 from gym.utils import seeding
 import numpy as np
 import random
+import ReinforcementLearning.algorithms.policy as rl_policy
 
 
 class GridWorld1(gym.Env):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
@@ -104,6 +105,8 @@ class GridWorld2x2(gym.Env):
     #       final exact values:     V0 = 14.912, V1 = 11.013, V2 = 11.013, V3 = 9.808
     #   gamma=0.9, epsilon=0, initial values: V0 = V1 = V2 = V3
     #       final exact values:     V0 = 15.658, V1 = 11.842, V2 = 11.842, V3 = 10.658
+    # Optimal policy pi*:
+    #       final exact values:     V0* = 26.316, V1* = 23.684, V2* = 23.684, V3* = 21.316
     metadata = {
         'render.modes': ['human']
     }
@@ -193,16 +196,18 @@ class GridWorld2x2(gym.Env):
 """ 
 Optimal policies, to match 'Reinforcement Learning', Sutton and Barto, p. 79
 """
-class GridWorld1OptimalPolicy():
+class GridWorld1OptimalPolicy(rl_policy.Policy):
     def __init__(self):
-        pass
+        legal_actions_authority = rl_policy.AllActionsLegalAuthority(set(range(4)))
+        super().__init__(legal_actions_authority)
 
     def Select(self, state):
-        actions_dict = {'north': 0, 'south': 1, 'east': 2, 'west': 3}
+        #actions_dict = {'north': 0, 'south': 1, 'east': 2, 'west': 3}
+        actions_set = self.legal_actions_authority.LegalActions(state)
         if state == 0 or state == 3:
             return 2
         elif state == 1:
-            return random.choice(list(actions_dict.values()))
+            return random.choice(list(actions_set))
         elif state == 2 or state == 4 or state == 8 or state == 9:
             return 3
         elif state == 6 or state == 11 or state == 16 or state == 21:
@@ -215,3 +220,22 @@ class GridWorld1OptimalPolicy():
             return random.choice([0, 3])
         else:
             raise ValueError("GridWorld1OptimalPolicy.Select(): State {} out of range".format(state))
+
+class GridWorld2x2OptimalPolicy(rl_policy.Policy):
+    def __init__(self):
+        legal_actions_authority = rl_policy.AllActionsLegalAuthority(set(range(4)))
+        super().__init__(legal_actions_authority)
+
+    def Select(self, state):
+        actions_set = self.legal_actions_authority.LegalActions(state)
+        if state == 0:
+            return random.choice(list(actions_set))
+        elif state == 1:
+            return 3
+        elif state == 2:
+            return 0
+        elif state == 3:
+            return random.choice([0, 3])
+        else:
+            raise ValueError("GridWorld2x2OptimalPolicy.Select(): state {} is out of range [0, 3]".format(state))
+
