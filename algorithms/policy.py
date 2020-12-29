@@ -14,7 +14,10 @@ class LegalActionsAuthority(abc.ABC):
     def LegalActions(self, state):
         pass # return legal_actions_list
 
-class AllActionsLegalAuthority(LegalActionsAuthority):  # Utility class that always allows all actions
+class AllActionsLegalAuthority(LegalActionsAuthority):
+    """
+    Utility class that always allows all actions
+    """
     def __init__(self, actions_set):
         super().__init__()
         self.actions_set = actions_set
@@ -32,18 +35,39 @@ class Policy(abc.ABC):
         self.legal_actions_authority = legal_actions_authority
 
     @abc.abstractmethod
+    def ActionProbabilities(self, state):
+        pass  # return action_to_probability_dict
+
+    def Probability(self, state, action):
+        action_to_probability_dict = self.ActionProbabilities(state)
+        if action in action_to_probability_dict:
+            return action_to_probability_dict[action]
+        else:
+            return 0
+
     def Select(self, state):
-        pass  # return action
+        action_to_probability_dict = self.ActionProbabilities(state)
+        action_running_sum_list = []
+        running_sum = 0
+        for action, probability in action_to_probability_dict.items():
+            running_sum += probability
+            action_running_sum_list.append((action, running_sum))
+        random_0to1 = random.random()
+        for action_running_sum in action_running_sum_list:
+            if action_running_sum[1] >= random_0to1:
+                return action_running_sum[0]
+        raise ValueError("Policy.Select(): Reached the end of the loop without returning. state = {}; action_running_sum_list = {}; random_0to1 = {}".format(state, action_running_sum_list, random_0to1))
 
 class Random(Policy):  # Selects randomly one of the legal actions
     def __init__(self, legal_actions_authority):
         super().__init__(legal_actions_authority)
 
-    def Select(self, state):
+    def ActionProbabilities(self, state):
         legal_actions_set = self.legal_actions_authority.LegalActions(state)
-        if len(legal_actions_set) == 0:
-            return None
-        return random.choice(list(legal_actions_set))
+        action_to_probability_dict = {}
+        for action in legal_actions_set:
+            action_to_probability_dict[action] = 1/len(legal_actions_set)
+        return action_to_probability_dict
 
 class EpsilonGreedy(Policy):  # Selects randomly with probability epsilon, otherwise selects the most valuable action,
                               # based on a static state evaluation.
@@ -55,31 +79,33 @@ class EpsilonGreedy(Policy):  # Selects randomly with probability epsilon, other
         self.environment = copy.deepcopy(environment)  # To avoid unintentional interference
         self.epsilon = epsilon
         self.gamma = gamma
-        self.number_of_trials_per_action = max(number_of_trials_per_action, 1)
+        self.number_of_trials_per_action = max(number_of_trials_per_action, 1)  # Should be 1 for deterministic environments
 
-    def Select(self, state):
+    def ActionProbabilities(self, state):
         legal_actions_set = self.legal_actions_authority.LegalActions(state)
         if len(legal_actions_set) == 0:
-            return None
-        random_0to1 = random.random()
-        if random_0to1 < self.epsilon:  # Random choice
-            return random.choice(list(legal_actions_set))
-        # Greedy choice
+            return {}
+        action_to_probability_dict = {}
         highest_value = float('-inf')
-        selected_actions_list = []
+        best_actions_list = []
         for candidate_action in legal_actions_set:
             average_value = 0
             for trialNdx in range(self.number_of_trials_per_action):
                 self.environment.SetState(state)
                 new_state, reward, done, info = self.environment.step(candidate_action)
                 average_value += reward + self.gamma * self.state_to_value_dict[new_state]
-            average_value = average_value/self.number_of_trials_per_action
+            average_value = average_value / self.number_of_trials_per_action
             if average_value > highest_value:
                 highest_value = average_value
-                selected_actions_list = [candidate_action]
+                best_actions_list = [candidate_action]
             elif average_value == highest_value:
-                selected_actions_list.append(candidate_action)
-        return random.choice(selected_actions_list)
+                best_actions_list.append(candidate_action)
+        for action in legal_actions_set:
+            if action in best_actions_list:
+                action_to_probability_dict[action] = self.epsilon / len(legal_actions_set) + (1 - self.epsilon) / len(best_actions_list)
+            else:
+                action_to_probability_dict[action] = self.epsilon / len(legal_actions_set)
+        return action_to_probability_dict
 
 
 class PolicyEvaluator:
