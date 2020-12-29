@@ -43,7 +43,7 @@ class JacksCarRental(gym.Env):
     def step(self, action_index):
         # End of the day: Move cars
         number_of_cars_moved_from_location1_to_location2 = action_index - 5  # [-5, -4, ..., 5]
-        (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation()
+        (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation(self.state)
         # Move the cars
         cars_at_location1 -= number_of_cars_moved_from_location1_to_location2
         cars_at_location2 += number_of_cars_moved_from_location1_to_location2
@@ -60,20 +60,21 @@ class JacksCarRental(gym.Env):
 
         # Returns
         location1_returns = self.rng.poisson(self.location1_return_average)
-        cars_at_location1 = max(cars_at_location1 + location1_returns, 20)
+        cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
         location2_returns = self.rng.poisson(self.location2_return_average)
-        cars_at_location2 = max(cars_at_location2 + location2_returns, 20)
+        cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
 
         # Rentals
-        location1_rentals = max(self.rng.poisson(self.location1_rental_average), cars_at_location1)
+        location1_rentals = min(self.rng.poisson(self.location1_rental_average), cars_at_location1)
         cars_at_location1 -= location1_rentals
-        location2_rentals = max(self.rng.poisson(self.location2_rental_average), cars_at_location2)
+        location2_rentals = min(self.rng.poisson(self.location2_rental_average), cars_at_location2)
         cars_at_location2 -= location2_rentals
 
         reward = -self.cost_for_move * abs(number_of_cars_moved_from_location1_to_location2) \
             + self.rental_reward * (location1_rentals + location2_rentals)
 
         new_state = self.StateFromCarsAtEachLocation(cars_at_location1, cars_at_location2)
+        self.state = new_state
 
         return (new_state, reward, False, None)
 
@@ -108,4 +109,8 @@ class JacksPossibleMoves(rl_policy.LegalActionsAuthority):
         (cars_at_location1, cars_at_location2) = JacksCarRental.NumberOfCarsAtEachLocation(state)
         minimum = max(-5, -cars_at_location2)
         maximum = min(5, cars_at_location1)
-        return set(list(range(minimum, maximum + 1)))
+        legal_actions_list = []
+        for moves in range(minimum, maximum + 1):
+            legal_actions_list.append(moves + 5)  # -5 -> action_index=0; -4 -> action_index=1...
+
+        return set(legal_actions_list)
