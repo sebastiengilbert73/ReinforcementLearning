@@ -12,7 +12,7 @@ class LegalActionsAuthority(abc.ABC):
 
     @abc.abstractmethod
     def LegalActions(self, state):
-        pass # return legal_actions_list
+        pass # return legal_actions_set
 
 class AllActionsLegalAuthority(LegalActionsAuthority):
     """
