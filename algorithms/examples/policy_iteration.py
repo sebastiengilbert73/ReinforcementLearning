@@ -5,18 +5,17 @@ import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
 from ReinforcementLearning.environments import jacks_car_rental
 import random
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
 parser.add_argument('--environment', help="The environment to use. Default: 'gridworld1'", default='gridworld1')
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
-#parser.add_argument('--policy', help="The policy. Default: 'random'", default='random')
 parser.add_argument('--gamma', help="The discount factor. Default: 0.9", type=float, default=0.9)
 parser.add_argument('--minimumChange', help="For the evaluator, the minimum value change to keep iterating. Default: 0.01", type=float, default=0.01)
 parser.add_argument('--numberOfSelectionsPerState', help="For the evaluator, the number of tried selections per state. Should be 1 for deterministic policies. Default: 100", type=int, default=100)
 parser.add_argument('--evaluatorMaximumNumberOfIterations', help="For the evaluator, the maximum number of iterations. Default: 1000", type=int, default=1000)
 parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
-#parser.add_argument('--epsilon', help="For epsilon-greedy policies, the probability of choosing a random action. Default: 0.1", type=float, default=0.1)
 parser.add_argument('--numberOfTrialsPerAction', help="The number of trials per action. For deterministic environments, should be 1. Default: 1", type=int, default=1)
 parser.add_argument('--iteratorMaximumNumberOfIterations', help="For the policy iterator, the maximum number of iterations. Default: 100", type=int, default=100)
 args = parser.parse_args()
@@ -75,6 +74,32 @@ def main():
 
     print("policy_state_to_actions_probabilities =\n{}".format(policy_state_to_actions_probabilities))
 
+    # Write outputs to file
+    WriteOutputs(policy, policy_state_to_actions_probabilities)
+
+
+def WriteOutputs(policy, policy_state_to_actions_probabilities):
+    if args.environment.lower() == 'jackscarrental':
+        policy_arr = np.zeros((21, 21), dtype=float)
+        for state in range(441):
+            (cars_at_location1, cars_at_location2) = jacks_car_rental.JacksCarRental.NumberOfCarsAtEachLocation(state)
+            action_to_probability_dict = policy_state_to_actions_probabilities[state]
+            highest_probability = 0
+            most_probable_action = None
+            for (action, probability) in action_to_probability_dict.items():
+                if probability > highest_probability:
+                    highest_probability = probability
+                    most_probable_action = action
+            policy_arr[cars_at_location1, cars_at_location2] = most_probable_action - 5
+
+        output_filepath = '/tmp/JacksCarRental_policy.csv'
+        with open(output_filepath, 'w') as output_file:
+            for cars_at_location1 in range(21):
+                for cars_at_location2 in range(21):
+                    output_file.write(policy_arr[cars_at_location1, cars_at_location2])
+                    if cars_at_location2 != 20:
+                        output_file.write(',')
+                output_file.write('\n')
 
 if __name__ == '__main__':
     main()
