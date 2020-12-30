@@ -146,3 +146,68 @@ class PolicyEvaluator:
             minimum_change_is_achieved = change >= self.minimum_change
             completed_iterations += 1
         return state_to_value_dict
+
+
+class PolicyIterator:
+    """
+    Implementation of policy iteration, Cf. 'Reinforcement Learning', Sutton and Barto, p. 98
+    """
+    def __init__(self, environment,
+                 policy_evaluator,
+                 legal_actions_authority,
+                 gamma=0.9,
+                 initial_value=0,
+                 number_of_trials_per_action=100,
+                 maximum_number_of_iterations=100,
+                 print_steps=False):
+        self.environment = copy.deepcopy(environment)
+        self.policy_evaluator = policy_evaluator
+        self.legal_actions_authority = legal_actions_authority
+        self.gamma = gamma
+        self.initial_value = initial_value
+        self.number_of_trials_per_action = number_of_trials_per_action  # For deterministic environments, should be 1
+        self.maximum_number_of_iterations = maximum_number_of_iterations
+        self.print_steps = print_steps
+
+    def IteratePolicy(self):
+        states_set = self.environment.StatesSet()
+        state_to_value_dict = {s: self.initial_value for s in states_set}  # Corresponds to V(s) in the book
+        iterated_policy = EpsilonGreedy(state_to_value_dict, self.legal_actions_authority,
+                                        self.environment,
+                                        epsilon=0,  # Greedy policy
+                                        gamma=self.gamma,
+                                        number_of_trials_per_action=self.number_of_trials_per_action)
+        iterated_policy_state_to_actions_probabilities = {}
+        for s in states_set:
+            iterated_policy_state_to_actions_probabilities[s] = iterated_policy.ActionProbabilities(s)
+        policy_is_stable = False
+        completed_iterations = 0
+        while not policy_is_stable and completed_iterations < self.maximum_number_of_iterations:
+            state_to_updated_value_dict = self.policy_evaluator.Evaluate(iterated_policy)
+            if self.print_steps:
+                print("Evaluation {} completed.".format(completed_iterations + 1))
+
+            iterated_policy = EpsilonGreedy(state_to_updated_value_dict,
+                                            self.legal_actions_authority,
+                                            self.environment,
+                                            epsilon=0,
+                                            gamma=self.gamma,
+                                            number_of_trials_per_action=self.number_of_trials_per_action)
+            updated_policy_state_to_actions_probabilities = {}
+            policy_is_stable = True
+            number_of_different_probabilities = 0
+            for state in states_set:
+                updated_policy_state_to_actions_probabilities[state] = iterated_policy.ActionProbabilities(state)
+                if updated_policy_state_to_actions_probabilities[state] != iterated_policy_state_to_actions_probabilities[state]:
+                    policy_is_stable = False
+                    number_of_different_probabilities += 1
+            if self.print_steps:
+                print ("policy_is_stable = {}; number_of_different_probabilities = {}".format(policy_is_stable, number_of_different_probabilities))
+            iterated_policy_state_to_actions_probabilities = updated_policy_state_to_actions_probabilities
+            completed_iterations += 1
+        return iterated_policy, iterated_policy_state_to_actions_probabilities
+
+
+
+
+
