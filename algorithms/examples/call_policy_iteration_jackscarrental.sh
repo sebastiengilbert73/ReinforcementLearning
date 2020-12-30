@@ -4,9 +4,10 @@ python policy_iteration.py \
 	--environment=JacksCarRental \
 	--legalActionsAuthority=JacksPossibleMoves \
 	--gamma=0.9 \
-	--minimumChange=10 \
-	--numberOfSelectionsPerState=1 \
-	--evaluatorMaximumNumberOfIterations=100 \
+	--epsilon=0.1 \
+	--minimumChange=5 \
+	--numberOfSelectionsPerState=300 \
+	--evaluatorMaximumNumberOfIterations=1000 \
 	--initialValue=0 \
-	--numberOfTrialsPerAction=10 \
+	--numberOfTrialsPerAction=100 \
 	--iteratorMaximumNumberOfIterations=100 \

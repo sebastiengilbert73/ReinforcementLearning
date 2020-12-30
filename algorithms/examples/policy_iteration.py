@@ -12,8 +12,9 @@ parser.add_argument('--randomSeed', help="The seed for the random module. Defaul
 parser.add_argument('--environment', help="The environment to use. Default: 'gridworld1'", default='gridworld1')
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
 parser.add_argument('--gamma', help="The discount factor. Default: 0.9", type=float, default=0.9)
+parser.add_argument('--epsilon', help="The probability of a random move, for epsilon-greedy policies. Default: 0.1", type=float, default=0.1)
 parser.add_argument('--minimumChange', help="For the evaluator, the minimum value change to keep iterating. Default: 0.01", type=float, default=0.01)
-parser.add_argument('--numberOfSelectionsPerState', help="For the evaluator, the number of tried selections per state. Should be 1 for deterministic policies. Default: 100", type=int, default=100)
+parser.add_argument('--numberOfSelectionsPerState', help="For the evaluator, the number of tried selections per state. Should be 1 if the policy and the environment are deterministic. Default: 100", type=int, default=100)
 parser.add_argument('--evaluatorMaximumNumberOfIterations', help="For the evaluator, the maximum number of iterations. Default: 1000", type=int, default=1000)
 parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
 parser.add_argument('--numberOfTrialsPerAction', help="The number of trials per action. For deterministic environments, should be 1. Default: 1", type=int, default=1)
@@ -63,6 +64,7 @@ def main():
          policy_evaluator=policy_evaluator,
          legal_actions_authority=legal_actions_authority,
          gamma=args.gamma,
+         epsilon=args.epsilon,
          initial_value=args.initialValue,
          number_of_trials_per_action=args.numberOfTrialsPerAction,
          maximum_number_of_iterations=args.iteratorMaximumNumberOfIterations,
@@ -70,9 +72,10 @@ def main():
     )
 
     # Iterate the policy
-    policy, policy_state_to_actions_probabilities = policy_iterator.IteratePolicy()
+    policy, policy_state_to_actions_probabilities, policy_state_to_most_valuable_action = policy_iterator.IteratePolicy()
 
-    print("policy_state_to_actions_probabilities =\n{}".format(policy_state_to_actions_probabilities))
+    #print("policy_state_to_actions_probabilities =\n{}".format(policy_state_to_actions_probabilities))
+    print ("policy_state_to_most_valuable_action = \n{}".format(policy_state_to_most_valuable_action))
 
     # Write outputs to file
     WriteOutputs(policy, policy_state_to_actions_probabilities)
@@ -96,7 +99,7 @@ def WriteOutputs(policy, policy_state_to_actions_probabilities):
         with open(output_filepath, 'w') as output_file:
             for cars_at_location1 in range(21):
                 for cars_at_location2 in range(21):
-                    output_file.write(policy_arr[cars_at_location1, cars_at_location2])
+                    output_file.write(str(policy_arr[cars_at_location1, cars_at_location2]))
                     if cars_at_location2 != 20:
                         output_file.write(',')
                 output_file.write('\n')
