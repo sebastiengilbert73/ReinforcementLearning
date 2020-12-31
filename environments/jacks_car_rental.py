@@ -11,7 +11,7 @@ class JacksCarRental(gym.Env):
     metadata = {
         'render.modes': ['human']
     }
-    def __init__(self):
+    def __init__(self, deterministic=False):
         self.observation_space = spaces.Discrete(21 * 21)  # ([0, 1, ... 20], [0, 1, ... 20])
         self.actions_list = list(range(-5, 6))  # [-5, -4, ..., 4, 5]
         self.action_space = spaces.Discrete(len(self.actions_list))
@@ -23,6 +23,7 @@ class JacksCarRental(gym.Env):
         self.location2_rental_average = 4
         self.location1_return_average = 3
         self.location2_return_average = 2
+        self.deterministic = True
         self.rng = np.random.default_rng()
 
     def seed(self, seed=None):
@@ -58,17 +59,30 @@ class JacksCarRental(gym.Env):
         if cars_at_location2 > 20:
             cars_at_location2 = 20
 
-        # Returns
-        location1_returns = self.rng.poisson(self.location1_return_average)
-        cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
-        location2_returns = self.rng.poisson(self.location2_return_average)
-        cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
+        if self.deterministic:
+            # Returns
+            location1_returns = self.location1_return_average
+            cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
+            location2_returns = self.location2_return_average
+            cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
 
-        # Rentals
-        location1_rentals = min(self.rng.poisson(self.location1_rental_average), cars_at_location1)
-        cars_at_location1 -= location1_rentals
-        location2_rentals = min(self.rng.poisson(self.location2_rental_average), cars_at_location2)
-        cars_at_location2 -= location2_rentals
+            # Rentals
+            location1_rentals = min(self.location1_rental_average, cars_at_location1)
+            cars_at_location1 -= location1_rentals
+            location2_rentals = min(self.location2_rental_average, cars_at_location2)
+            cars_at_location2 -= location2_rentals
+        else:
+            # Returns
+            location1_returns = self.rng.poisson(self.location1_return_average)
+            cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
+            location2_returns = self.rng.poisson(self.location2_return_average)
+            cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
+
+            # Rentals
+            location1_rentals = min(self.rng.poisson(self.location1_rental_average), cars_at_location1)
+            cars_at_location1 -= location1_rentals
+            location2_rentals = min(self.rng.poisson(self.location2_rental_average), cars_at_location2)
+            cars_at_location2 -= location2_rentals
 
         reward = -self.cost_for_move * abs(number_of_cars_moved_from_location1_to_location2) \
             + self.rental_reward * (location1_rentals + location2_rentals)

@@ -189,6 +189,8 @@ class PolicyIterator:
         actions_set = self.environment.ActionsSet()
         iterated_policy = Greedy({s: list(actions_set)[0] for s in states_set}, self.legal_actions_authority)  # Initialize with the same action for each state
         last_policy_state_to_most_valuable_action = iterated_policy.state_to_most_valuable_action
+        #iterated_policy = Random(self.legal_actions_authority)
+        #last_policy_state_to_most_valuable_action = {s: list(actions_set)[0] for s in states_set}
 
         policy_is_stable = False
         completed_iterations = 0
