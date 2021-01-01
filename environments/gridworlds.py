@@ -72,11 +72,13 @@ class GridWorld1(gym.Env):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.
     def close(self):
         pass
 
-    def Coordinates(self):
-        if self.state < 0 or self.state > 24:
-            raise ValueError("GridWorld1.Coordinates(): state {} is out of range [0, 24]".format(self.state))
-        row = self.state // 5
-        column = self.state - row * 5
+    def Coordinates(self, state=None):
+        if state is None:
+            state = self.state
+        if state < 0 or state > 24:
+            raise ValueError("GridWorld1.Coordinates(): state {} is out of range [0, 24]".format(state))
+        row = state // 5
+        column = state - row * 5
         return (row, column)
 
     def StateFromCoordinates(self, row, column):
@@ -95,6 +97,58 @@ class GridWorld1(gym.Env):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.
     def ActionsSet(self):
         return set(range(4))
 
+    def TransitionProbabilitiesAndRewards(self, action):
+        new_state_to_probability_reward = {}
+        origin_coordinates = self.Coordinates()
+
+        for new_state in self.StatesSet():
+            new_coordinates = self.Coordinates(new_state)
+            probability = 0
+            reward = 0
+            if origin_coordinates[0] == 0 and origin_coordinates[1] == 1:
+                if new_coordinates[0] == 4 and new_coordinates[1] == 1:  # No matter what action:
+                    probability = 1
+                    reward = 10
+                else:
+                    probability = 0
+                    reward = 0
+            elif origin_coordinates[0] == 0 and origin_coordinates[1] == 3:
+                if new_coordinates[0] == 2 and new_coordinates[1] == 3:  # No matter what action:
+                    probability = 1
+                    reward = 5
+                else:
+                    probability = 0
+                    reward = 0
+            elif new_coordinates[0] - origin_coordinates[0] == 1 and \
+                    new_coordinates[1] == origin_coordinates[1] and action == 1:
+                probability = 1
+            elif new_coordinates[0] - origin_coordinates[0] == -1 and \
+                    new_coordinates[1] == origin_coordinates[1] and action == 0:
+                probability = 1
+            elif new_coordinates[1] - origin_coordinates[1] == 1 and \
+                new_coordinates[0] == origin_coordinates[0] and action == 2:
+                probability = 1
+            elif new_coordinates[1] - origin_coordinates[1] == -1 and \
+                new_coordinates[0] == origin_coordinates[0] and action == 3:
+                probability = 1
+            elif origin_coordinates[0] == 0 and new_coordinates[0] == 0 and \
+                origin_coordinates[1] == new_coordinates[1] and action == 0:
+                probability = 1
+                reward = -1
+            elif origin_coordinates[0] == 4 and new_coordinates[0] == 4 and \
+                origin_coordinates[1] == new_coordinates[1] and action == 1:
+                probability = 1
+                reward = -1
+            elif origin_coordinates[1] == 0 and new_coordinates[1] == 0 and \
+                origin_coordinates[0] == new_coordinates[0] and action == 3:
+                probability = 1
+                reward = -1
+            elif origin_coordinates[1] == 4 and new_coordinates[1] == 4 and \
+                origin_coordinates[0] == new_coordinates[0] and action == 2:
+                probability = 1
+                reward = -1
+            new_state_to_probability_reward[new_state] = (probability, reward)
+        return new_state_to_probability_reward
 
 class GridWorld2x2(gym.Env):
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
@@ -190,6 +244,45 @@ class GridWorld2x2(gym.Env):
 
     def ActionsSet(self):
         return set(range(4))
+
+    def TransitionProbabilitiesAndRewards(self, action):
+        new_state_to_probability_reward = {}
+        for new_state in self.StatesSet():
+            probability = 0
+            reward = 0
+            if new_state == 0:
+                if self.state == 1 and action == 3 or \
+                    self.state == 2 and action == 0:
+                    probability = 1
+            elif new_state == 1:
+                if self.state == 3 and action == 0:
+                    probability = 1
+                if self.state == 1 and action == 0 or \
+                    self.state == 1 and action == 2:
+                    probability = 1
+                    reward = -1
+            elif new_state == 2:
+                if self.state == 0:
+                    probability = 1
+                    reward = 5
+                elif self.state == 2 and action == 3 or \
+                    self.state == 2 and action == 1:
+                    probability = 1
+                    reward = -1
+                elif self.state == 3 and action == 3:
+                    probability = 1
+            elif new_state == 3:
+                if self.state == 1 and action == 1:
+                    probability = 1
+                elif self.state == 2 and action == 2:
+                    probability = 1
+                elif self.state == 3 and action == 2 or \
+                    self.state == 3 and action == 1:
+                    probability = 1
+                    reward = -1
+            new_state_to_probability_reward[new_state] = (probability, reward)
+        return new_state_to_probability_reward
+
 
 
 

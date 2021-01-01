@@ -5,9 +5,9 @@ python policy_iteration.py \
 	--legalActionsAuthority=JacksPossibleMoves \
 	--gamma=0.9 \
 	--epsilon=0.1 \
-	--minimumChange=5 \
-	--numberOfSelectionsPerState=300 \
+	--minimumChange=0.3 \
+	--numberOfSelectionsPerState=1 \
 	--evaluatorMaximumNumberOfIterations=1000 \
 	--initialValue=0 \
-	--numberOfTrialsPerAction=100 \
+	--numberOfTrialsPerAction=1 \
 	--iteratorMaximumNumberOfIterations=100 \

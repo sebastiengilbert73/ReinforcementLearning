@@ -4,6 +4,7 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
+import math
 
 
 class JacksCarRental(gym.Env):
@@ -23,7 +24,7 @@ class JacksCarRental(gym.Env):
         self.location2_rental_average = 4
         self.location1_return_average = 3
         self.location2_return_average = 2
-        self.deterministic = True
+        self.deterministic = deterministic
         self.rng = np.random.default_rng()
 
     def seed(self, seed=None):
@@ -114,6 +115,31 @@ class JacksCarRental(gym.Env):
     def ActionsSet(self):
         return set(self.actions_list)
 
+    def TransitionProbabilitiesAndRewards(self, action):
+        new_state_to_probability_reward = {}
+        (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation(self.state)
+        number_of_moves_from_location1_to_location2 = action - 5  # [-5, -4, ...., 5]
+        for new_state in self.StatesSet():
+            (new_cars_at_location1, new_cars_at_location2) = self.NumberOfCarsAtEachLocation(new_state)
+            customers_delta_location1 = new_cars_at_location1 - cars_at_location1 + number_of_moves_from_location1_to_location2
+            customers_delta_location2 = new_cars_at_location2 - cars_at_location2 - number_of_moves_from_location1_to_location2
+            customers_delta_location1_probability = ProbabilityOfDelta(
+                self.location1_return_average, self.location1_rental_average, customers_delta_location1)
+            customers_delta_location2_probability = ProbabilityOfDelta(
+                self.location2_return_average, self.location2_rental_average, customers_delta_location2)
+            transition_probability = customers_delta_location1_probability * customers_delta_location2_probability
+            reward = -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
+                self.rental_reward * (ExpectedNumberOfRentals(self.location1_return_average,
+                                                              self.location1_rental_average,
+                                                              customers_delta_location1) + \
+                ExpectedNumberOfRentals(self.location2_return_average,
+                                        self.location2_rental_average,
+                                        customers_delta_location2) )
+            new_state_to_probability_reward[new_state] = (transition_probability, reward)
+        return new_state_to_probability_reward
+
+
+
 
 class JacksPossibleMoves(rl_policy.LegalActionsAuthority):
     def __init__(self):
@@ -128,3 +154,37 @@ class JacksPossibleMoves(rl_policy.LegalActionsAuthority):
             legal_actions_list.append(moves + 5)  # -5 -> action_index=0; -4 -> action_index=1...
 
         return set(legal_actions_list)
+
+
+def Poisson(lambda_, n):
+    if n < 0:
+        return 0
+    return pow(lambda_, n) * math.exp(-lambda_)/math.factorial(n)
+
+def ProbabilityOfDelta(returns_lambda, rentals_lambda, customers_delta, poisson_maximum=12):
+    # customers_delta = returns - rentals
+    probability = 0
+    for returns in range(0, poisson_maximum + 1):
+        rentals = returns - customers_delta
+        if rentals >= 0 and rentals <= poisson_maximum:
+            probability += Poisson(returns_lambda, returns) * Poisson(rentals_lambda, rentals)
+    return probability
+
+def ReturnsAndRentalsDistribution(returns_lambda, rentals_lambda, customers_delta, poisson_maximum=12):
+    # customers_delta = returns - rentals
+    probability_of_delta = ProbabilityOfDelta(returns_lambda, rentals_lambda, customers_delta)
+    if probability_of_delta < 1e-9:
+        return {}
+    returns_rentals_to_probability = {}
+    for returns in range(0, poisson_maximum + 1):
+        rentals = returns - customers_delta
+        probability = Poisson(returns_lambda, returns) * Poisson(rentals_lambda, rentals)/probability_of_delta
+        returns_rentals_to_probability[(returns, rentals)] = probability
+    return returns_rentals_to_probability
+
+def ExpectedNumberOfRentals(returns_lambda, rentals_lambda, customers_delta, poisson_maximum=12):
+    returns_and_rentals_distribution = ReturnsAndRentalsDistribution(returns_lambda, rentals_lambda, customers_delta, poisson_maximum)
+    expected_rentals = 0
+    for ((returns, rentals), probability) in returns_and_rentals_distribution.items():
+        expected_rentals += rentals * probability
+    return expected_rentals

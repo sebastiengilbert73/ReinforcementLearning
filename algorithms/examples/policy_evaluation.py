@@ -27,7 +27,7 @@ def main():
     logging.info("policy_evaluation.py    main()   environment={}".format(args.environment))
 
     # Create the environment
-    # It must implement gym.Env, ActionsSet(), StatesSet(), SetState(s)
+    # It must implement gym.Env, ActionsSet(), StatesSet(), SetState(s), TransitionProbabilitiesAndRewards(action)
     environment = None
     if args.environment.lower() == 'gridworld1':
         environment = gridworlds.GridWorld1()
