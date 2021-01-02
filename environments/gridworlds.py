@@ -4,15 +4,17 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.environments.dpenv as dpenv
 
 
-class GridWorld1(gym.Env):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
+class GridWorld1(dpenv.DynamicProgrammingEnv):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     metadata = {
         'render.modes': ['human']
     }
 
     def __init__(self):
+        super().__init__()
         self.observation_space = spaces.Discrete(25)
         self.action_space = spaces.Discrete(4)
         self.actionsList = ['north', 'south', 'east', 'west']
@@ -150,7 +152,7 @@ class GridWorld1(gym.Env):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.
             new_state_to_probability_reward[new_state] = (probability, reward)
         return new_state_to_probability_reward
 
-class GridWorld2x2(gym.Env):
+class GridWorld2x2(dpenv.DynamicProgrammingEnv):
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     # Random policy, gamma=0.9:
     #       final exact values:     V0 = 7.316; V1 = 2.573; V2 = 2.573; V3 = 1.196
@@ -166,6 +168,7 @@ class GridWorld2x2(gym.Env):
     }
 
     def __init__(self):
+        super().__init__()
         self.observation_space = spaces.Discrete(4)
         self.action_space = spaces.Discrete(4)
         self.actionsList = ['north', 'south', 'east', 'west']

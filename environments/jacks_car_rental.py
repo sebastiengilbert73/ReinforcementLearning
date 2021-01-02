@@ -4,15 +4,17 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.environments.dpenv as dpenv
 import math
 
 
-class JacksCarRental(gym.Env):
+class JacksCarRental(dpenv.DynamicProgrammingEnv):
     # Cf. 'Reinforcement Learning', Sutton and Barto, p. 98
     metadata = {
         'render.modes': ['human']
     }
     def __init__(self, deterministic=False):
+        super().__init__()
         self.observation_space = spaces.Discrete(21 * 21)  # ([0, 1, ... 20], [0, 1, ... 20])
         self.actions_list = list(range(-5, 6))  # [-5, -4, ..., 4, 5]
         self.action_space = spaces.Discrete(len(self.actions_list))
