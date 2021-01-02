@@ -155,48 +155,13 @@ class PolicyEvaluator:
                     self.environment.SetState(state)
                     selected_action = policy.Select(state)
                     # The following call will eliminate the non-deterministic behavior of the environment
-                    # Because we don't call step()
+                    # because we don't call step()
                     new_state_to_probability_reward = self.environment.TransitionProbabilitiesAndRewards(selected_action)
-                    #print("Evaluate(): new_state_to_probability_reward = {}".format(new_state_to_probability_reward))
                     average_value += sum(probability * (reward + self.gamma * state_to_value_dict[new_state]) for (new_state, (probability, reward) ) in new_state_to_probability_reward.items())
-
-                    #if not average_value_exploded and average_value > 100:
-
-                    #print("state = {}".format(state))
-                    #print ("selected_action = {}".format(selected_action))
-                    #average_value_exploded = True
-                    #print ("new_state_to_probability_reward = \n{}".format(new_state_to_probability_reward))
-                    #print("Evaluate(): average_value = {}".format(average_value))
                 average_value = average_value/self.number_of_selections_per_state
-                #print ("After division, average_value = {}".format(average_value))
-
                 updated_state_to_value_dict[state] = average_value
                 change = max(change, abs(previous_value - average_value))
-                #print ("improvement = {}".format(improvement))
             state_to_value_dict = updated_state_to_value_dict
-            minimum_change_is_achieved = change >= self.minimum_change
-            completed_iterations += 1
-        return (state_to_value_dict, change, completed_iterations)
-
-    def Evaluate2(self, policy):
-        minimum_change_is_achieved = True
-        states_set = self.environment.StatesSet()
-        state_to_value_dict = {s: self.initial_value for s in states_set}
-        completed_iterations = 0
-        while minimum_change_is_achieved and completed_iterations < self.maximum_number_of_iterations:
-            change = 0
-            for state in states_set:
-                previous_value = state_to_value_dict[state]
-                average_value = 0
-                for selectionNdx in range(self.number_of_selections_per_state):
-                    self.environment.SetState(state)
-                    selected_action = policy.Select(state)
-                    new_state, reward, done, info = self.environment.step(selected_action)
-                    average_value += reward + self.gamma * state_to_value_dict[new_state]
-                average_value = average_value/self.number_of_selections_per_state
-                state_to_value_dict[state] = average_value
-                change = max(change, abs(previous_value - average_value))
-                #print ("improvement = {}".format(improvement))
             minimum_change_is_achieved = change >= self.minimum_change
             completed_iterations += 1
         return (state_to_value_dict, change, completed_iterations)
@@ -230,8 +195,6 @@ class PolicyIterator:
         actions_set = self.environment.ActionsSet()
         iterated_policy = Greedy({s: list(actions_set)[0] for s in states_set}, self.legal_actions_authority)  # Initialize with the same action for each state
         last_policy_state_to_most_valuable_action = iterated_policy.state_to_most_valuable_action
-        #iterated_policy = Random(self.legal_actions_authority)
-        #last_policy_state_to_most_valuable_action = {s: list(actions_set)[0] for s in states_set}
 
         policy_is_stable = False
         completed_iterations = 0
@@ -249,61 +212,6 @@ class PolicyIterator:
                     new_state_to_probability_reward = self.environment.TransitionProbabilitiesAndRewards(
                         candidate_action)
                     expected_value = sum(probability * (reward + self.gamma * state_to_updated_value_dict[new_state]) for (new_state, (probability, reward) ) in new_state_to_probability_reward.items())
-                    """for trialNdx in range(self.number_of_trials_per_action):
-                        self.environment.SetState(state)
-                        new_state, reward, done, info = self.environment.step(candidate_action)
-                        expected_value += reward + self.gamma * state_to_updated_value_dict[new_state]
-                    expected_value = expected_value/self.number_of_trials_per_action
-                    """
-                    action_to_expected_value_dict[candidate_action] = expected_value
-                most_valuable_action = self.MostValuableAction(action_to_expected_value_dict)
-                state_to_most_valuable_action[state] = most_valuable_action
-            # Create a new greedy policy
-            iterated_policy = Greedy(state_to_most_valuable_action, self.legal_actions_authority)
-
-            number_of_disagreements = 0
-            for s in states_set:
-                if iterated_policy.state_to_most_valuable_action[s] != last_policy_state_to_most_valuable_action[s]:
-                    number_of_disagreements += 1
-            if number_of_disagreements == 0:
-                policy_is_stable = True
-
-            if self.print_steps:
-                print ("policy_is_stable = {}; number_of_disagreements = {}".format(policy_is_stable, number_of_disagreements))
-            last_policy_state_to_most_valuable_action = iterated_policy.state_to_most_valuable_action
-            completed_iterations += 1
-
-        iterated_policy_state_to_actions_probabilities = {}
-        for s in states_set:
-            iterated_policy_state_to_actions_probabilities[s] = iterated_policy.ActionProbabilities(s)
-        return (iterated_policy, iterated_policy_state_to_actions_probabilities, last_policy_state_to_most_valuable_action)
-
-    def IteratePolicy2(self):
-        states_set = self.environment.StatesSet()
-        actions_set = self.environment.ActionsSet()
-        iterated_policy = Greedy({s: list(actions_set)[0] for s in states_set}, self.legal_actions_authority)  # Initialize with the same action for each state
-        last_policy_state_to_most_valuable_action = iterated_policy.state_to_most_valuable_action
-        #iterated_policy = Random(self.legal_actions_authority)
-        #last_policy_state_to_most_valuable_action = {s: list(actions_set)[0] for s in states_set}
-
-        policy_is_stable = False
-        completed_iterations = 0
-        while not policy_is_stable and completed_iterations < self.maximum_number_of_iterations:
-            (state_to_updated_value_dict, last_change_magnitude, evaluation_completed_iterations) = self.policy_evaluator.Evaluate(iterated_policy)
-            if self.print_steps:
-                print("Evaluation {} completed.".format(completed_iterations + 1))
-                print("last_change_magnitude = {}; evaluation_completed_iterations = {}".format(last_change_magnitude, evaluation_completed_iterations))
-            state_to_most_valuable_action = {}
-            for state in states_set:
-                action_to_expected_value_dict = {}
-                legal_actions = self.legal_actions_authority.LegalActions(state)
-                for candidate_action in legal_actions:
-                    expected_value = 0
-                    for trialNdx in range(self.number_of_trials_per_action):
-                        self.environment.SetState(state)
-                        new_state, reward, done, info = self.environment.step(candidate_action)
-                        expected_value += reward + self.gamma * state_to_updated_value_dict[new_state]
-                    expected_value = expected_value/self.number_of_trials_per_action
                     action_to_expected_value_dict[candidate_action] = expected_value
                 most_valuable_action = self.MostValuableAction(action_to_expected_value_dict)
                 state_to_most_valuable_action[state] = most_valuable_action
