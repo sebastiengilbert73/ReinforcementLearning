@@ -5,6 +5,7 @@ import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
 from ReinforcementLearning.environments import jacks_car_rental
 import random
+import ast
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
@@ -20,12 +21,15 @@ parser.add_argument('--action', help="The action to test. Default: 0", type=int,
 #parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
 #parser.add_argument('--epsilon', help="For epsilon-greedy policies, the probability of choosing a random action. Default: 0.1", type=float, default=0.1)
 parser.add_argument('--numberOfTrials', help="The number of trials for the action. For deterministic environments, should be 1. Default: 100", type=int, default=100)
-
+parser.add_argument('--newStatesList', help="The list of states to display. Default: 'all'", default='all')
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s [%(levelname)s] %(message)s')
 random.seed(args.randomSeed)
-
+if args.newStatesList == 'all':
+    newStatesList = None
+else:
+    newStatesList = ast.literal_eval(args.newStatesList)
 
 def main():
     logging.info("test_transition_probabilities.py  main()\t\tenvironment = {}\t\tlegalActionsAuthority = {}".format(args.environment, args.legalActionsAuthority))
@@ -62,12 +66,14 @@ if __name__ == '__main__':
     actions_set = environment.ActionsSet()
     if args.state not in states_set:
         raise ValueError("main(): args.state ({}) is not is the set of states ({})".format(args.state, states_set))
+    if newStatesList is None:
+        newStatesList = list(states_set)
 
     # Set the environment state
     environment.SetState(args.state)
     legal_actions = legal_actions_authority.LegalActions(args.state)
     if args.action not in legal_actions:
-        raise ValueError("main(): args.action ({}) is not in the actions set ({})".format(args.action, actions_set))
+        raise ValueError("main(): args.action ({}) is not in the legal actions set ({})".format(args.action, legal_actions))
 
     new_state_to_numberOfOccurrences = {s: 0 for s in states_set}
     new_state_to_rewardSum = {s: 0 for s in states_set}
@@ -76,9 +82,13 @@ if __name__ == '__main__':
         new_state, reward, done, info = environment.step(args.action)
         new_state_to_numberOfOccurrences[new_state] += 1
         new_state_to_rewardSum[new_state] += reward
-    simulated_new_state_to_probability_reward = {s: (new_state_to_numberOfOccurrences[s]/args.numberOfTrials,
-                                                     new_state_to_rewardSum[s]/args.numberOfTrials)
-                                                 for s in states_set}
+    simulated_new_state_to_probability_reward = {}
+    for s in states_set:
+        probability = new_state_to_numberOfOccurrences[s]/args.numberOfTrials
+        expected_reward = 0
+        if new_state_to_numberOfOccurrences[s] > 0:
+            expected_reward = new_state_to_rewardSum[s]/new_state_to_numberOfOccurrences[s]
+        simulated_new_state_to_probability_reward[s] = (probability, expected_reward)
 
     # Call TransitionProbabilitiesAndRewards(action)
     environment.SetState(args.state)
@@ -87,7 +97,7 @@ if __name__ == '__main__':
     # Display the comparison
     #print ("new_state\t\tsimulated probability\tcoded_probability\t\tsimulated expected reward\tcoded expected reward")
     print("{:<30}{:<30}{:<30}{:<30}{:<30}".format("new_state", "simulated probability", "coded_probability", "simulated expected reward", "coded expected reward"))
-    for state in states_set:
+    for state in newStatesList:
         print("     {:<30}{:<30}{:<30}{:<30}{:<30}".format(state, simulated_new_state_to_probability_reward[state][0],
                                               coded_new_state_to_probability_reward[state][0],
                                               simulated_new_state_to_probability_reward[state][1],
