@@ -121,19 +121,11 @@ class JacksCarRental(gym.Env):
         transition_probabilities_arr = np.zeros((21, 21), dtype=float)
         final_state_to_weighted_reward = {s: 0 for s in self.StatesSet()}
 
-        poisson_maximum = 12
+        poisson_maximum = 13
         for returns_at_location1 in range(poisson_maximum + 1):
-            actual_returns_at_location1 = returns_at_location1
-            if cars_at_location1 + returns_at_location1 - number_of_moves_from_location1_to_location2 > 20:
-                actual_returns_at_location1 = 20 - cars_at_location1 + number_of_moves_from_location1_to_location2
-                actual_returns_at_location1 = max(actual_returns_at_location1, 0)
-            start_cars_at_location1 = cars_at_location1 + actual_returns_at_location1 - number_of_moves_from_location1_to_location2
+            start_cars_at_location1 = np.clip(cars_at_location1 + returns_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
             for returns_at_location2 in range(poisson_maximum + 1):
-                actual_returns_at_location2 = returns_at_location2
-                if cars_at_location2 + returns_at_location2 + number_of_moves_from_location1_to_location2 > 20:
-                    actual_returns_at_location2 = 20 - cars_at_location2 - number_of_moves_from_location1_to_location2
-                    actual_returns_at_location2 = max(actual_returns_at_location2, 0)
-                start_cars_at_location2 = cars_at_location2 + actual_returns_at_location2 + number_of_moves_from_location1_to_location2
+                start_cars_at_location2 = np.clip(cars_at_location2 + returns_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
                 for rentals_at_location1 in range(poisson_maximum + 1):
                     actual_rentals_at_location1 = min(rentals_at_location1, start_cars_at_location1)
                     final_cars_at_location1 = start_cars_at_location1 - actual_rentals_at_location1
@@ -146,6 +138,21 @@ class JacksCarRental(gym.Env):
                             Poisson(self.location2_rental_average, rentals_at_location2)
                         reward = -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
                             self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2)
+                        if final_cars_at_location1 < 0 or final_cars_at_location1 > 20 or final_cars_at_location2 < 0 or final_cars_at_location2 > 20:
+                            print(" ********** JacksCarRental.TransitionProbabilitiesAndRewards() **********")
+                            print ("final_cars_at_location1 = {}; final_cars_at_location2 = {}".format(final_cars_at_location1, final_cars_at_location2))
+                            print("self.state = {}; action = {}".format(self.state, action))
+                            print("cars_at_location1 = {}; cars_at_location2 = {}".format(cars_at_location1, cars_at_location2))
+                            jacks_possible_moves = JacksPossibleMoves()
+                            legal_actions = jacks_possible_moves.LegalActions(self.state)
+                            print ("legal_actions = {}".format(legal_actions))
+                            print ("returns_at_location1 = {}".format(returns_at_location1))
+                            print("start_cars_at_location1 = {}".format(start_cars_at_location1))
+                            print("returns_at_location2 = {}".format(returns_at_location2))
+                            print("start_cars_at_location2 = {}".format(start_cars_at_location2))
+                            print("rentals_at_location1 = {}; actual_rentals_at_location1 = {}".format(rentals_at_location1, actual_rentals_at_location1))
+                            print("rentals_at_location2 = {}; actual_rentals_at_location2 = {}".format(rentals_at_location2, actual_rentals_at_location2))
+                            print("")
                         transition_probabilities_arr[final_cars_at_location1, final_cars_at_location2] += probability
                         final_state = self.StateFromCarsAtEachLocation(final_cars_at_location1, final_cars_at_location2)
                         final_state_to_weighted_reward[final_state] += probability * reward
