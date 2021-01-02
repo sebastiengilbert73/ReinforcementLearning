@@ -93,7 +93,7 @@ def WriteOutputs(policy, policy_state_to_actions_probabilities):
                 if probability > highest_probability:
                     highest_probability = probability
                     most_probable_action = action
-            policy_arr[cars_at_location1, cars_at_location2] = most_probable_action - 5
+            policy_arr[cars_at_location1, cars_at_location2] = most_probable_action
 
         output_filepath = '/tmp/JacksCarRental_policy.csv'
         with open(output_filepath, 'w') as output_file:
