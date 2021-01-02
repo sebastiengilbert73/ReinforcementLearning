@@ -5,8 +5,8 @@ python policy_iteration.py \
 	--legalActionsAuthority=AllActionsLegal \
 	--gamma=0.9 \
 	--epsilon=0.1 \
-	--minimumChange=0.5 \
-	--numberOfSelectionsPerState=30 \
+	--minimumChange=0.1 \
+	--numberOfSelectionsPerState=1 \
 	--evaluatorMaximumNumberOfIterations=3000 \
 	--initialValue=0 \
 	--numberOfTrialsPerAction=1 \
