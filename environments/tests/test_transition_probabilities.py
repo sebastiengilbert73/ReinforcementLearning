@@ -13,13 +13,6 @@ parser.add_argument('--environment', help="The environment to use. Default: 'gri
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
 parser.add_argument('--state', help="The state the environment must be in. Default: 0", type=int, default=0)
 parser.add_argument('--action', help="The action to test. Default: 0", type=int, default=0)
-#parser.add_argument('--policy', help="The policy. Default: 'random'", default='random')
-#parser.add_argument('--gamma', help="The discount factor. Default: 0.9", type=float, default=0.9)
-#parser.add_argument('--minimumChange', help="The minimum value change to keep iterating. Default: 0.01", type=float, default=0.01)
-#parser.add_argument('--numberOfSelectionsPerState', help="The number of tried selections per state. Should be 1 if the policy and the environment are deterministic. Default: 100", type=int, default=100)
-#parser.add_argument('--maximumNumberOfIterations', help="The maximum number of iterations. Default: 1000", type=int, default=1000)
-#parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
-#parser.add_argument('--epsilon', help="For epsilon-greedy policies, the probability of choosing a random action. Default: 0.1", type=float, default=0.1)
 parser.add_argument('--numberOfTrials', help="The number of trials for the action. For deterministic environments, should be 1. Default: 100", type=int, default=100)
 parser.add_argument('--newStatesList', help="The list of states to display. Default: 'all'", default='all')
 args = parser.parse_args()
@@ -95,7 +88,6 @@ if __name__ == '__main__':
     coded_new_state_to_probability_reward = environment.TransitionProbabilitiesAndRewards(args.action)
 
     # Display the comparison
-    #print ("new_state\t\tsimulated probability\tcoded_probability\t\tsimulated expected reward\tcoded expected reward")
     print("{:<30}{:<30}{:<30}{:<30}{:<30}".format("new_state", "simulated probability", "coded_probability", "simulated expected reward", "coded expected reward"))
     for state in newStatesList:
         print("     {:<30}{:<30}{:<30}{:<30}{:<30}".format(state, simulated_new_state_to_probability_reward[state][0],
