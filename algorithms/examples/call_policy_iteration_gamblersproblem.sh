@@ -4,8 +4,8 @@ python policy_iteration.py \
 	--environment=GamblersProblem \
 	--legalActionsAuthority=GamblersPossibleStakes \
 	--gamma=1.0 \
-	--minimumChange=0.001 \
+	--minimumChange=0.000001 \
 	--numberOfSelectionsPerState=1 \
 	--evaluatorMaximumNumberOfIterations=100 \
-	--initialValue=0 \
-	--iteratorMaximumNumberOfIterations=1000 \
+	--initialValue=0.0 \
+	--iteratorMaximumNumberOfIterations=150 \
