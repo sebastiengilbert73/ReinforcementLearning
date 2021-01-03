@@ -25,6 +25,9 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
         reward = 0
         done = False
         info_dict = None
+        if self.state == 0 or self.state == 100:
+            return (self.state, 0, True, info_dict)
+
         random_0to1 = random.random()
         if random_0to1 < self.heads_probability:  # gambler wins
             self.state += stake
@@ -36,7 +39,6 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
             self.state -= stake
             if self.state <= 0:
                 self.state = 0
-                reward = 0
                 done = True
         return (self.state, reward, done, info_dict)
 
@@ -66,18 +68,18 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
 
     def ComputeTransitionProbabilitiesAndRewards(self, action):
         newState_to_probabilityAndReward_dict = {}
+        if self.state == 0 or self.state == 100:
+            return {self.state: (1, 0)}
         stake = action
-        for new_state in self.StatesSet():
-            probability = 0
-            reward = 0
-            #if self.state - stake > 0 and self.state + stake < 100:  # No need to worry about end of episode
-            if new_state == self.state + stake:  # A win
-                probability = self.heads_probability
-                if new_state == 100:
-                    reward = 1
-            elif new_state == self.state - stake:  # A loss
-                probability = 1 - self.heads_probability
-            newState_to_probabilityAndReward_dict[new_state] = (probability, reward)
+        if self.state + stake >= 100:
+            newState_to_probabilityAndReward_dict[100] = (self.heads_probability, 1)
+        else:
+            newState_to_probabilityAndReward_dict[self.state + stake] = (self.heads_probability, 0)
+
+        if self.state - stake <= 0:
+            newState_to_probabilityAndReward_dict[0] = (1 - self.heads_probability, 0)
+        else:
+            newState_to_probabilityAndReward_dict[self.state - stake] = (1 - self.heads_probability, 0)
         return newState_to_probabilityAndReward_dict
 
 

@@ -96,14 +96,20 @@ if __name__ == '__main__':
 
         # Display the comparison
         print("{:<30}{:<30}{:<30}{:<30}{:<30}".format("new_state", "simulated probability", "coded_probability", "simulated expected reward", "coded expected reward"))
+        simulated_probabilities_sum = 0
+        coded_probabilities_sum = 0
         for state in newStatesList:
-            print("     {:<30}{:<30}{:<30}{:<30}{:<30}".format(state, simulated_new_state_to_probability_reward[state][0],
-                                                  coded_new_state_to_probability_reward[state][0],
-                                                  simulated_new_state_to_probability_reward[state][1],
-                                                  coded_new_state_to_probability_reward[state][1]))
+            simulated_probability = simulated_new_state_to_probability_reward.get(state, (0, 0))[0]
+            simulated_reward = simulated_new_state_to_probability_reward.get(state, (0, 0))[1]
+            coded_probability = coded_new_state_to_probability_reward.get(state, (0, 0))[0]
+            coded_reward = coded_new_state_to_probability_reward.get(state, (0, 0))[1]
+            print("     {:<30}{:<30}{:<30}{:<30}{:<30}".format(state, simulated_probability,
+                                                  coded_probability,
+                                                  simulated_reward,
+                                                  coded_reward))
+            simulated_probabilities_sum += simulated_probability
+            coded_probabilities_sum += coded_probability
 
-        simulated_probabilities_sum = sum(simulated_new_state_to_probability_reward[s][0] for s in states_set)
-        coded_probabilities_sum = sum(coded_new_state_to_probability_reward[s][0] for s in states_set)
         print ("\n{:>50}{:>30}".format(simulated_probabilities_sum, coded_probabilities_sum))
 
     else:  # Scan and compare
