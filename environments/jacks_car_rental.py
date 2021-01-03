@@ -13,7 +13,7 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
     metadata = {
         'render.modes': ['human']
     }
-    def __init__(self, deterministic=False):
+    def __init__(self):
         super().__init__()
         self.observation_space = spaces.Discrete(21 * 21)  # ([0, 1, ... 20], [0, 1, ... 20])
         self.actions_list = list(range(-5, 6))  # [-5, -4, ..., 4, 5]
@@ -26,7 +26,6 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         self.location2_rental_average = 4
         self.location1_return_average = 3
         self.location2_return_average = 2
-        self.deterministic = deterministic
         self.rng = np.random.default_rng()
 
     def seed(self, seed=None):
@@ -62,30 +61,17 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         if cars_at_location2 > 20:
             cars_at_location2 = 20
 
-        if self.deterministic:
-            # Returns
-            location1_returns = self.location1_return_average
-            cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
-            location2_returns = self.location2_return_average
-            cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
+        # Rentals
+        location1_rentals = min(self.rng.poisson(self.location1_rental_average), cars_at_location1)
+        cars_at_location1 -= location1_rentals
+        location2_rentals = min(self.rng.poisson(self.location2_rental_average), cars_at_location2)
+        cars_at_location2 -= location2_rentals
 
-            # Rentals
-            location1_rentals = min(self.location1_rental_average, cars_at_location1)
-            cars_at_location1 -= location1_rentals
-            location2_rentals = min(self.location2_rental_average, cars_at_location2)
-            cars_at_location2 -= location2_rentals
-        else:
-            # Returns
-            location1_returns = self.rng.poisson(self.location1_return_average)
-            cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
-            location2_returns = self.rng.poisson(self.location2_return_average)
-            cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
-
-            # Rentals
-            location1_rentals = min(self.rng.poisson(self.location1_rental_average), cars_at_location1)
-            cars_at_location1 -= location1_rentals
-            location2_rentals = min(self.rng.poisson(self.location2_rental_average), cars_at_location2)
-            cars_at_location2 -= location2_rentals
+        # Returns
+        location1_returns = self.rng.poisson(self.location1_return_average)
+        cars_at_location1 = min(cars_at_location1 + location1_returns, 20)
+        location2_returns = self.rng.poisson(self.location2_return_average)
+        cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
 
         reward = -self.cost_for_move * abs(number_of_cars_moved_from_location1_to_location2) \
             + self.rental_reward * (location1_rentals + location2_rentals)
@@ -124,36 +110,40 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         final_state_to_weighted_reward = {s: 0 for s in self.StatesSet()}
 
         poisson_maximum = 13
-        for returns_at_location1 in range(poisson_maximum + 1):
-            start_cars_at_location1 = np.clip(cars_at_location1 + returns_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
-            for returns_at_location2 in range(poisson_maximum + 1):
-                start_cars_at_location2 = np.clip(cars_at_location2 + returns_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
-                for rentals_at_location1 in range(poisson_maximum + 1):
-                    actual_rentals_at_location1 = min(rentals_at_location1, start_cars_at_location1)
-                    final_cars_at_location1 = start_cars_at_location1 - actual_rentals_at_location1
-                    for rentals_at_location2 in range(poisson_maximum + 1):
-                        actual_rentals_at_location2 = min(rentals_at_location2, start_cars_at_location2)
-                        final_cars_at_location2 = start_cars_at_location2 - actual_rentals_at_location2
+        for rentals_at_location1 in range(poisson_maximum + 1):
+            start_cars_at_location1 = np.clip(cars_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
+            actual_rentals_at_location1 = min(rentals_at_location1, start_cars_at_location1)
+            for rentals_at_location2 in range(poisson_maximum + 1):
+                start_cars_at_location2 = np.clip(cars_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
+                actual_rentals_at_location2 = min(rentals_at_location2, start_cars_at_location2)
+                for returns_at_location1 in range(poisson_maximum + 1):
+                    final_cars_at_location1 = np.clip(start_cars_at_location1 - actual_rentals_at_location1 + returns_at_location1, 0, 20)
+                    for returns_at_location2 in range(poisson_maximum + 1):
+                        final_cars_at_location2 = np.clip(start_cars_at_location2 - actual_rentals_at_location2 + returns_at_location2, 0, 20)
                         probability = Poisson(self.location1_return_average, returns_at_location1) * \
-                            Poisson(self.location1_rental_average, rentals_at_location1) * \
-                            Poisson(self.location2_return_average, returns_at_location2) * \
-                            Poisson(self.location2_rental_average, rentals_at_location2)
+                                      Poisson(self.location1_rental_average, rentals_at_location1) * \
+                                      Poisson(self.location2_return_average, returns_at_location2) * \
+                                      Poisson(self.location2_rental_average, rentals_at_location2)
                         reward = -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
-                            self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2)
+                                 self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2)
                         if final_cars_at_location1 < 0 or final_cars_at_location1 > 20 or final_cars_at_location2 < 0 or final_cars_at_location2 > 20:
                             print(" ********** JacksCarRental.TransitionProbabilitiesAndRewards() **********")
-                            print ("final_cars_at_location1 = {}; final_cars_at_location2 = {}".format(final_cars_at_location1, final_cars_at_location2))
+                            print("final_cars_at_location1 = {}; final_cars_at_location2 = {}".format(
+                                final_cars_at_location1, final_cars_at_location2))
                             print("self.state = {}; action = {}".format(self.state, action))
-                            print("cars_at_location1 = {}; cars_at_location2 = {}".format(cars_at_location1, cars_at_location2))
+                            print("cars_at_location1 = {}; cars_at_location2 = {}".format(cars_at_location1,
+                                                                                          cars_at_location2))
                             jacks_possible_moves = JacksPossibleMoves()
                             legal_actions = jacks_possible_moves.LegalActions(self.state)
-                            print ("legal_actions = {}".format(legal_actions))
-                            print ("returns_at_location1 = {}".format(returns_at_location1))
+                            print("legal_actions = {}".format(legal_actions))
+                            print("returns_at_location1 = {}".format(returns_at_location1))
                             print("start_cars_at_location1 = {}".format(start_cars_at_location1))
                             print("returns_at_location2 = {}".format(returns_at_location2))
                             print("start_cars_at_location2 = {}".format(start_cars_at_location2))
-                            print("rentals_at_location1 = {}; actual_rentals_at_location1 = {}".format(rentals_at_location1, actual_rentals_at_location1))
-                            print("rentals_at_location2 = {}; actual_rentals_at_location2 = {}".format(rentals_at_location2, actual_rentals_at_location2))
+                            print("rentals_at_location1 = {}; actual_rentals_at_location1 = {}".format(
+                                rentals_at_location1, actual_rentals_at_location1))
+                            print("rentals_at_location2 = {}; actual_rentals_at_location2 = {}".format(
+                                rentals_at_location2, actual_rentals_at_location2))
                             print("")
                         transition_probabilities_arr[final_cars_at_location1, final_cars_at_location2] += probability
                         final_state = self.StateFromCarsAtEachLocation(final_cars_at_location1, final_cars_at_location2)
