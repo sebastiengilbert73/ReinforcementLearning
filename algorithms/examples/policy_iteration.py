@@ -83,10 +83,10 @@ def main():
     print ("policy_state_to_most_valuable_action = \n{}".format(policy_state_to_most_valuable_action))
 
     # Write outputs to file
-    WriteOutputs(policy, policy_state_to_actions_probabilities)
+    WriteOutputs(policy, policy_state_to_actions_probabilities, environment)
 
 
-def WriteOutputs(policy, policy_state_to_actions_probabilities):
+def WriteOutputs(policy, policy_state_to_actions_probabilities, environment):
     if args.environment.lower() == 'jackscarrental':
         policy_arr = np.zeros((21, 21), dtype=float)
         for state in range(441):
@@ -109,11 +109,22 @@ def WriteOutputs(policy, policy_state_to_actions_probabilities):
                         output_file.write(',')
                 output_file.write('\n')
     elif args.environment.lower() == 'gamblersproblem':
+        # Evaluate precisely
+        policy_evaluator = rl_policy.PolicyEvaluator(environment=environment,
+                                                     gamma=args.gamma,
+                                                     minimum_change=0.001,
+                                                     number_of_selections_per_state=1,
+                                                     maximum_number_of_iterations=100,
+                                                     initial_value=0
+                                                     )
+        (state_to_value_dict, change, completed_iterations) = policy_evaluator.Evaluate(policy)
+
         output_filepath = '/tmp/GamblersProblem_policy.csv'
         with open(output_filepath, 'w') as output_file:
             for origin_state in range(1, 100):
                 stake = policy.Select(origin_state)
-                output_file.write("{},{}\n".format(origin_state, stake))
+                value = state_to_value_dict[origin_state]
+                output_file.write("{},{},{}\n".format(origin_state, stake, value))
 
 if __name__ == '__main__':
     main()
