@@ -143,6 +143,7 @@ class PolicyEvaluator:
         minimum_change_is_achieved = True
         states_set = self.environment.StatesSet()
         state_to_value_dict = {s: self.initial_value for s in states_set}
+        #state_to_value_dict = {s: random.random() for s in states_set}
         completed_iterations = 0
         #average_value_exploded = False
         while minimum_change_is_achieved and completed_iterations < self.maximum_number_of_iterations:
@@ -161,7 +162,7 @@ class PolicyEvaluator:
                 average_value = average_value/self.number_of_selections_per_state
                 updated_state_to_value_dict[state] = average_value
                 change = max(change, abs(previous_value - average_value))
-            state_to_value_dict = updated_state_to_value_dict
+            state_to_value_dict = copy.deepcopy(updated_state_to_value_dict)
             minimum_change_is_achieved = change >= self.minimum_change
             completed_iterations += 1
         return (state_to_value_dict, change, completed_iterations)
@@ -234,7 +235,15 @@ class PolicyIterator:
     def MostValuableAction(action_to_expected_value_dict):
         highest_value = float('-inf')
         most_valuable_action = None
-        for (action, value) in action_to_expected_value_dict.items():
+        actions_list = list(action_to_expected_value_dict.keys())
+        actions_list.sort()
+        """for (action, value) in action_to_expected_value_dict.items():
+            if value > highest_value:
+                highest_value = value
+                most_valuable_action = action
+        """
+        for action in actions_list:
+            value = action_to_expected_value_dict[action]
             if value > highest_value:
                 highest_value = value
                 most_valuable_action = action
