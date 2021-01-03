@@ -13,7 +13,7 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
         self.heads_probability = heads_probability
         self.state = 1
         self.actions_set = set(list(range(1, 100)))  # [1, 2, ..., 99]
-        self.states_set = set(list(range(0, 101)))  # {0 (= failure), 1, 2, ..., 100 (= success)}
+        self.states_set = set(list(range(1, 100)))
         self.seed()
         self.rng = np.random.default_rng()
 
@@ -64,7 +64,7 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
     def ActionsSet(self):
         return self.actions_set
 
-    def TransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, action):
         newState_to_probabilityAndReward_dict = {}
         stake = action
         for new_state in self.StatesSet():

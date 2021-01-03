@@ -117,7 +117,7 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
     def ActionsSet(self):
         return set(self.actions_list)
 
-    def TransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, action):
         (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation(self.state)
         number_of_moves_from_location1_to_location2 = action  # [-5, -4, ...., 5]
         transition_probabilities_arr = np.zeros((21, 21), dtype=float)

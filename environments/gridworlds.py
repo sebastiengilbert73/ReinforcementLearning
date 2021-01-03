@@ -99,7 +99,7 @@ class GridWorld1(dpenv.DynamicProgrammingEnv):  # Cf. 'Reinforcement Learning', 
     def ActionsSet(self):
         return set(range(4))
 
-    def TransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, action):
         new_state_to_probability_reward = {}
         origin_coordinates = self.Coordinates()
 
@@ -248,7 +248,7 @@ class GridWorld2x2(dpenv.DynamicProgrammingEnv):
     def ActionsSet(self):
         return set(range(4))
 
-    def TransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, action):
         new_state_to_probability_reward = {}
         for new_state in self.StatesSet():
             probability = 0
