@@ -13,12 +13,12 @@ parser.add_argument('--randomSeed', help="The seed for the random module. Defaul
 parser.add_argument('--environment', help="The environment to use. Default: 'gridworld1'", default='gridworld1')
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
 parser.add_argument('--gamma', help="The discount factor. Default: 0.9", type=float, default=0.9)
-parser.add_argument('--epsilon', help="The probability of a random move, for epsilon-greedy policies. Default: 0.1", type=float, default=0.1)
+#parser.add_argument('--epsilon', help="The probability of a random move, for epsilon-greedy policies. Default: 0.1", type=float, default=0.1)
 parser.add_argument('--minimumChange', help="For the evaluator, the minimum value change to keep iterating. Default: 0.01", type=float, default=0.01)
 parser.add_argument('--numberOfSelectionsPerState', help="For the evaluator, the number of tried selections per state. Should be 1 if the policy and the environment are deterministic. Default: 100", type=int, default=100)
 parser.add_argument('--evaluatorMaximumNumberOfIterations', help="For the evaluator, the maximum number of iterations. Default: 1000", type=int, default=1000)
 parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
-parser.add_argument('--numberOfTrialsPerAction', help="The number of trials per action. For deterministic environments, should be 1. Default: 1", type=int, default=1)
+#parser.add_argument('--numberOfTrialsPerAction', help="The number of trials per action. For deterministic environments, should be 1. Default: 1", type=int, default=1)
 parser.add_argument('--iteratorMaximumNumberOfIterations', help="For the policy iterator, the maximum number of iterations. Default: 100", type=int, default=100)
 args = parser.parse_args()
 
@@ -69,9 +69,9 @@ def main():
          policy_evaluator=policy_evaluator,
          legal_actions_authority=legal_actions_authority,
          gamma=args.gamma,
-         epsilon=args.epsilon,
-         initial_value=args.initialValue,
-         number_of_trials_per_action=args.numberOfTrialsPerAction,
+         #epsilon=args.epsilon,
+         #initial_value=args.initialValue,
+         #number_of_trials_per_action=args.numberOfTrialsPerAction,
          maximum_number_of_iterations=args.iteratorMaximumNumberOfIterations,
          print_steps=True
     )
