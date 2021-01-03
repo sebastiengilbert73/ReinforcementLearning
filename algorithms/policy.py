@@ -175,25 +175,18 @@ class PolicyIterator:
                  policy_evaluator,
                  legal_actions_authority,
                  gamma=0.9,
-                 epsilon=0.1,
-                 initial_value=0,
-                 number_of_trials_per_action=100,
                  maximum_number_of_iterations=100,
                  print_steps=False):
         self.environment = copy.deepcopy(environment)
         self.policy_evaluator = policy_evaluator
         self.legal_actions_authority = legal_actions_authority
         self.gamma = gamma
-        self.epsilon = epsilon
-        self.initial_value = initial_value
-        #self.number_of_trials_per_action = number_of_trials_per_action  # For deterministic environments, should be 1
         self.maximum_number_of_iterations = maximum_number_of_iterations
         self.print_steps = print_steps
 
     def IteratePolicy(self):
         states_set = self.environment.StatesSet()
         actions_set = self.environment.ActionsSet()
-        #iterated_policy = Greedy({s: list(actions_set)[0] for s in states_set}, self.legal_actions_authority)  # Initialize with the same action for each state
         iterated_policy = Greedy({s: random.choice(list(actions_set)) for s in states_set}, self.legal_actions_authority)
         last_policy_state_to_most_valuable_action = iterated_policy.state_to_most_valuable_action
 
