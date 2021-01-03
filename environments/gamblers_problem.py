@@ -13,7 +13,7 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
         self.heads_probability = heads_probability
         self.state = 1
         self.actions_set = set(list(range(1, 100)))  # [1, 2, ..., 99]
-        self.states_set = set(list(range(1, 100)))
+        self.states_set = set(list(range(0, 101)))
         self.seed()
         self.rng = np.random.default_rng()
 
@@ -86,6 +86,8 @@ class GamblersPossibleStakes(rl_policy.LegalActionsAuthority):
         super().__init__()
 
     def LegalActions(self, state):
+        if state == 100 or state == 0:
+            return {0}
         max_stake = state
         if state + max_stake > 100:
             max_stake = 100 - state
