@@ -41,7 +41,9 @@ if __name__ == '__main__':
     elif args.environment.lower() == 'gridworld2x2':
         environment = gridworlds.GridWorld2x2()
     elif args.environment.lower() == 'jackscarrental':
-        environment = jacks_car_rental.JacksCarRental()
+        environment = jacks_car_rental.JacksCarRental('original')
+    elif args.environment.lower() == 'jackscarrental4.4':
+        environment = jacks_car_rental.JacksCarRental('exercise_4.4')
     elif args.environment.lower() == 'gamblersproblem':
         environment = gamblers_problem.GamblersProblem(heads_probability=0.4)
     else:

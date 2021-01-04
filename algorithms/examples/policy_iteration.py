@@ -36,7 +36,9 @@ def main():
     elif args.environment.lower() == 'gridworld2x2':
         environment = gridworlds.GridWorld2x2()
     elif args.environment.lower() == 'jackscarrental':
-        environment = jacks_car_rental.JacksCarRental()
+        environment = jacks_car_rental.JacksCarRental('original')
+    elif args.environment.lower() == 'jackscarrental4.4':
+        environment = jacks_car_rental.JacksCarRental('exercise_4.4')
     elif args.environment.lower() == 'gamblersproblem':
         environment = gamblers_problem.GamblersProblem(heads_probability=0.4)
     else:
@@ -101,6 +103,27 @@ def WriteOutputs(policy, policy_state_to_actions_probabilities, environment):
             policy_arr[cars_at_location1, cars_at_location2] = most_probable_action
 
         output_filepath = '/tmp/JacksCarRental_policy.csv'
+        with open(output_filepath, 'w') as output_file:
+            for cars_at_location1 in range(21):
+                for cars_at_location2 in range(21):
+                    output_file.write(str(policy_arr[cars_at_location1, cars_at_location2]))
+                    if cars_at_location2 != 20:
+                        output_file.write(',')
+                output_file.write('\n')
+    elif args.environment.lower() == 'jackscarrental4.4':
+        policy_arr = np.zeros((21, 21), dtype=float)
+        for state in range(441):
+            (cars_at_location1, cars_at_location2) = jacks_car_rental.JacksCarRental.NumberOfCarsAtEachLocation(state)
+            action_to_probability_dict = policy_state_to_actions_probabilities[state]
+            highest_probability = 0
+            most_probable_action = None
+            for (action, probability) in action_to_probability_dict.items():
+                if probability > highest_probability:
+                    highest_probability = probability
+                    most_probable_action = action
+            policy_arr[cars_at_location1, cars_at_location2] = most_probable_action
+
+        output_filepath = '/tmp/JacksCarRental4.4_policy.csv'
         with open(output_filepath, 'w') as output_file:
             for cars_at_location1 in range(21):
                 for cars_at_location2 in range(21):

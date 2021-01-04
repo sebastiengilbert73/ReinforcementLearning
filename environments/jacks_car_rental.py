@@ -13,8 +13,9 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
     metadata = {
         'render.modes': ['human']
     }
-    def __init__(self):
+    def __init__(self, version='original'):
         super().__init__()
+        self.version = version
         self.observation_space = spaces.Discrete(21 * 21)  # ([0, 1, ... 20], [0, 1, ... 20])
         self.actions_list = list(range(-5, 6))  # [-5, -4, ..., 4, 5]
         self.action_space = spaces.Discrete(len(self.actions_list))
@@ -26,6 +27,8 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         self.location2_rental_average = 4
         self.location1_return_average = 3
         self.location2_return_average = 2
+        self.exercise_4_4_additional_parking_cost = 4.
+        self.exercise_4_4_parking_limit = 10
         self.rng = np.random.default_rng()
 
     def seed(self, seed=None):
@@ -60,6 +63,8 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
             cars_at_location1 = 20
         if cars_at_location2 > 20:
             cars_at_location2 = 20
+        start_cars_at_location1 = cars_at_location1
+        start_cars_at_location2 = cars_at_location2
 
         # Rentals
         location1_rentals = min(self.rng.poisson(self.location1_rental_average), cars_at_location1)
@@ -73,8 +78,10 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         location2_returns = self.rng.poisson(self.location2_return_average)
         cars_at_location2 = min(cars_at_location2 + location2_returns, 20)
 
-        reward = -self.cost_for_move * abs(number_of_cars_moved_from_location1_to_location2) \
-            + self.rental_reward * (location1_rentals + location2_rentals)
+        #reward = -self.cost_for_move * abs(number_of_cars_moved_from_location1_to_location2) \
+        #    + self.rental_reward * (location1_rentals + location2_rentals)
+        reward = self.Reward(number_of_cars_moved_from_location1_to_location2, location1_rentals, location2_rentals,
+                             start_cars_at_location1, start_cars_at_location2)
 
         new_state = self.StateFromCarsAtEachLocation(cars_at_location1, cars_at_location2)
         self.state = new_state
@@ -104,17 +111,19 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         return set(self.actions_list)
 
     def ComputeTransitionProbabilitiesAndRewards(self, action):
+        poisson_maximum = 13
         (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation(self.state)
         number_of_moves_from_location1_to_location2 = action  # [-5, -4, ...., 5]
         transition_probabilities_arr = np.zeros((21, 21), dtype=float)
         final_state_to_weighted_reward = {s: 0 for s in self.StatesSet()}
 
-        poisson_maximum = 13
+        start_cars_at_location1 = np.clip(cars_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
+        start_cars_at_location2 = np.clip(cars_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
         for rentals_at_location1 in range(poisson_maximum + 1):
-            start_cars_at_location1 = np.clip(cars_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
+            #start_cars_at_location1 = np.clip(cars_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
             actual_rentals_at_location1 = min(rentals_at_location1, start_cars_at_location1)
             for rentals_at_location2 in range(poisson_maximum + 1):
-                start_cars_at_location2 = np.clip(cars_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
+                #start_cars_at_location2 = np.clip(cars_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
                 actual_rentals_at_location2 = min(rentals_at_location2, start_cars_at_location2)
                 for returns_at_location1 in range(poisson_maximum + 1):
                     final_cars_at_location1 = np.clip(start_cars_at_location1 - actual_rentals_at_location1 + returns_at_location1, 0, 20)
@@ -124,8 +133,11 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
                                       Poisson(self.location1_rental_average, rentals_at_location1) * \
                                       Poisson(self.location2_return_average, returns_at_location2) * \
                                       Poisson(self.location2_rental_average, rentals_at_location2)
-                        reward = -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
+                        """reward = -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
                                  self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2)
+                        """
+                        reward = self.Reward(number_of_moves_from_location1_to_location2, actual_rentals_at_location1,
+                                             actual_rentals_at_location2, start_cars_at_location1, start_cars_at_location2)
                         if final_cars_at_location1 < 0 or final_cars_at_location1 > 20 or final_cars_at_location2 < 0 or final_cars_at_location2 > 20:
                             print(" ********** JacksCarRental.TransitionProbabilitiesAndRewards() **********")
                             print("final_cars_at_location1 = {}; final_cars_at_location2 = {}".format(
@@ -158,6 +170,28 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
                 expected_reward = final_state_to_weighted_reward[new_state] / transition_probability
             state_to_probability_and_reward[new_state] = (transition_probability, expected_reward)
         return state_to_probability_and_reward
+
+    def Reward(self, number_of_moves_from_location1_to_location2, actual_rentals_at_location1, actual_rentals_at_location2,
+               start_cars_at_location1, start_cars_at_location2):
+        if self.version == 'original':
+            return -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
+                self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2)
+        elif self.version == 'exercise_4.4':
+            number_of_costly_moves = number_of_moves_from_location1_to_location2
+            if number_of_moves_from_location1_to_location2 > 0:  # We move from location1 to location2: one will be free
+                number_of_costly_moves = number_of_moves_from_location1_to_location2 - 1
+            number_of_additional_parking_lots = 0
+            if start_cars_at_location1 > self.exercise_4_4_parking_limit:
+                number_of_additional_parking_lots += 1
+            if start_cars_at_location2 > self.exercise_4_4_parking_limit:
+                number_of_additional_parking_lots += 1
+            reward = -self.cost_for_move * abs(number_of_costly_moves) + \
+                self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2) + \
+                -self.exercise_4_4_additional_parking_cost * number_of_additional_parking_lots
+            return reward
+        else:
+            raise NotImplementedError("JacksCarRental.Reward(): Not implemented version '{}'".format(self.version))
+
 
 
 class JacksPossibleMoves(rl_policy.LegalActionsAuthority):
