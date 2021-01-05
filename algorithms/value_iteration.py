@@ -29,8 +29,8 @@ class ValueIterator:
                 max_value = float('-inf')
                 most_valuable_action = None
                 for candidate_action in self.legal_actions_authority.LegalActions(origin_state):
-                    self.environment.SetState(origin_state)
-                    newState_to_probabilityReward = self.environment.TransitionProbabilitiesAndRewards(candidate_action)
+                    #self.environment.SetState(origin_state)
+                    newState_to_probabilityReward = self.environment.TransitionProbabilitiesAndRewards(origin_state, candidate_action)
                     candidate_value = sum(newState_to_probabilityReward.get(new_state, (0, 0))[0] *
                                           (newState_to_probabilityReward.get(new_state, (0, 0))[1] +
                                            self.gamma * state_to_value[new_state]) for new_state in states_set)

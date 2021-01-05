@@ -153,11 +153,11 @@ class PolicyEvaluator:
                 previous_value = state_to_value_dict[state]
                 average_value = 0
                 for selectionNdx in range(self.number_of_selections_per_state):  # More than 1, for non-deterministic policies
-                    self.environment.SetState(state)
+                    #self.environment.SetState(state)
                     selected_action = policy.Select(state)
                     # The following call will eliminate the non-deterministic behavior of the environment
                     # because we don't call step()
-                    new_state_to_probability_reward = self.environment.TransitionProbabilitiesAndRewards(selected_action)
+                    new_state_to_probability_reward = self.environment.TransitionProbabilitiesAndRewards(state, selected_action)
                     average_value += sum(probability * (reward + self.gamma * state_to_value_dict[new_state]) for (new_state, (probability, reward) ) in new_state_to_probability_reward.items())
                 average_value = average_value/self.number_of_selections_per_state
                 updated_state_to_value_dict[state] = average_value
@@ -203,8 +203,8 @@ class PolicyIterator:
                 action_to_expected_value_dict = {}
                 legal_actions = self.legal_actions_authority.LegalActions(state)
                 for candidate_action in legal_actions:
-                    self.environment.SetState(state)
-                    new_state_to_probability_reward = self.environment.TransitionProbabilitiesAndRewards(
+                    #self.environment.SetState(state)
+                    new_state_to_probability_reward = self.environment.TransitionProbabilitiesAndRewards(state,
                         candidate_action)
                     expected_value = sum(probability * (reward + self.gamma * state_to_updated_value_dict[new_state]) for (new_state, (probability, reward) ) in new_state_to_probability_reward.items())
                     action_to_expected_value_dict[candidate_action] = expected_value

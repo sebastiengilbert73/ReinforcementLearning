@@ -39,11 +39,11 @@ class DynamicProgrammingEnv(abc.ABC, gym.Env):
     def ActionsSet(self):
         pass
 
-    def TransitionProbabilitiesAndRewards(self, action):
-        if (self.state, action) not in self.originStateAction_to_newStateToProbabilityReward:
-            self.originStateAction_to_newStateToProbabilityReward[(self.state, action)] = self.ComputeTransitionProbabilitiesAndRewards(action)
-        return self.originStateAction_to_newStateToProbabilityReward[(self.state, action)]
+    def TransitionProbabilitiesAndRewards(self, state, action):
+        if (state, action) not in self.originStateAction_to_newStateToProbabilityReward:
+            self.originStateAction_to_newStateToProbabilityReward[(state, action)] = self.ComputeTransitionProbabilitiesAndRewards(state, action)
+        return self.originStateAction_to_newStateToProbabilityReward[(state, action)]
 
     @abc.abstractmethod
-    def ComputeTransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         pass  # return newState_to_probabilityAndReward_dict

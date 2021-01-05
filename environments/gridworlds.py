@@ -99,9 +99,9 @@ class GridWorld1(dpenv.DynamicProgrammingEnv):  # Cf. 'Reinforcement Learning', 
     def ActionsSet(self):
         return set(range(4))
 
-    def ComputeTransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         new_state_to_probability_reward = {}
-        origin_coordinates = self.Coordinates()
+        origin_coordinates = self.Coordinates(state)
 
         for new_state in self.StatesSet():
             new_coordinates = self.Coordinates(new_state)
@@ -248,39 +248,39 @@ class GridWorld2x2(dpenv.DynamicProgrammingEnv):
     def ActionsSet(self):
         return set(range(4))
 
-    def ComputeTransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         new_state_to_probability_reward = {}
         for new_state in self.StatesSet():
             probability = 0
             reward = 0
             if new_state == 0:
-                if self.state == 1 and action == 3 or \
-                    self.state == 2 and action == 0:
+                if state == 1 and action == 3 or \
+                    state == 2 and action == 0:
                     probability = 1
             elif new_state == 1:
-                if self.state == 3 and action == 0:
+                if state == 3 and action == 0:
                     probability = 1
-                if self.state == 1 and action == 0 or \
-                    self.state == 1 and action == 2:
+                if state == 1 and action == 0 or \
+                    state == 1 and action == 2:
                     probability = 1
                     reward = -1
             elif new_state == 2:
-                if self.state == 0:
+                if state == 0:
                     probability = 1
                     reward = 5
-                elif self.state == 2 and action == 3 or \
-                    self.state == 2 and action == 1:
+                elif state == 2 and action == 3 or \
+                    state == 2 and action == 1:
                     probability = 1
                     reward = -1
-                elif self.state == 3 and action == 3:
+                elif state == 3 and action == 3:
                     probability = 1
             elif new_state == 3:
-                if self.state == 1 and action == 1:
+                if state == 1 and action == 1:
                     probability = 1
-                elif self.state == 2 and action == 2:
+                elif state == 2 and action == 2:
                     probability = 1
-                elif self.state == 3 and action == 2 or \
-                    self.state == 3 and action == 1:
+                elif state == 3 and action == 2 or \
+                    state == 3 and action == 1:
                     probability = 1
                     reward = -1
             new_state_to_probability_reward[new_state] = (probability, reward)

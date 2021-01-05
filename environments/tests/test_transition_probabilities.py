@@ -5,6 +5,7 @@ import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
 from ReinforcementLearning.environments import jacks_car_rental
 from ReinforcementLearning.environments import gamblers_problem
+from ReinforcementLearning.environments import frozen_lake
 import random
 import ast
 
@@ -46,6 +47,8 @@ if __name__ == '__main__':
         environment = jacks_car_rental.JacksCarRental('exercise_4.4')
     elif args.environment.lower() == 'gamblersproblem':
         environment = gamblers_problem.GamblersProblem(heads_probability=0.4)
+    elif args.environment.lower() == 'frozenlake':
+        environment = frozen_lake.FrozenLake()
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 

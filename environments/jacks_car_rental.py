@@ -110,9 +110,9 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
     def ActionsSet(self):
         return set(self.actions_list)
 
-    def ComputeTransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         poisson_maximum = 13
-        (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation(self.state)
+        (cars_at_location1, cars_at_location2) = self.NumberOfCarsAtEachLocation(state)
         number_of_moves_from_location1_to_location2 = action  # [-5, -4, ...., 5]
         transition_probabilities_arr = np.zeros((21, 21), dtype=float)
         final_state_to_weighted_reward = {s: 0 for s in self.StatesSet()}
@@ -120,10 +120,8 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
         start_cars_at_location1 = np.clip(cars_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
         start_cars_at_location2 = np.clip(cars_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
         for rentals_at_location1 in range(poisson_maximum + 1):
-            #start_cars_at_location1 = np.clip(cars_at_location1 - number_of_moves_from_location1_to_location2, 0, 20)
             actual_rentals_at_location1 = min(rentals_at_location1, start_cars_at_location1)
             for rentals_at_location2 in range(poisson_maximum + 1):
-                #start_cars_at_location2 = np.clip(cars_at_location2 + number_of_moves_from_location1_to_location2, 0, 20)
                 actual_rentals_at_location2 = min(rentals_at_location2, start_cars_at_location2)
                 for returns_at_location1 in range(poisson_maximum + 1):
                     final_cars_at_location1 = np.clip(start_cars_at_location1 - actual_rentals_at_location1 + returns_at_location1, 0, 20)
@@ -133,9 +131,6 @@ class JacksCarRental(dpenv.DynamicProgrammingEnv):
                                       Poisson(self.location1_rental_average, rentals_at_location1) * \
                                       Poisson(self.location2_return_average, returns_at_location2) * \
                                       Poisson(self.location2_rental_average, rentals_at_location2)
-                        """reward = -self.cost_for_move * abs(number_of_moves_from_location1_to_location2) + \
-                                 self.rental_reward * (actual_rentals_at_location1 + actual_rentals_at_location2)
-                        """
                         reward = self.Reward(number_of_moves_from_location1_to_location2, actual_rentals_at_location1,
                                              actual_rentals_at_location2, start_cars_at_location1, start_cars_at_location2)
                         if final_cars_at_location1 < 0 or final_cars_at_location1 > 20 or final_cars_at_location2 < 0 or final_cars_at_location2 > 20:

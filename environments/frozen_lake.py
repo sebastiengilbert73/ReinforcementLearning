@@ -1,0 +1,79 @@
+import gym
+from gym import spaces
+from gym.utils import seeding
+import numpy as np
+import random
+import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.environments.dpenv as dpenv
+
+class FrozenLake(dpenv.DynamicProgrammingEnv):
+    def __init__(self, rows=4, columns=4):
+        super().__init__()
+        self.frozen_lake = gym.make('FrozenLake-v0')
+        self.frozen_lake.reset()
+        self.actions_set = set(range(4))
+        #self.rows = rows
+        #self.columns = columns
+        self.states_set = set(range(self.frozen_lake.nrow * self.frozen_lake.ncol))
+        self.holes = [(1, 1), (1, 3), (2, 3), (3, 0)]
+        self.goals = [(3, 3)]
+
+
+
+    def render(self):
+        self.frozen_lake.render()
+
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
+
+    def reset(self):
+        self.state = 0
+        self.frozen_lake.reset()
+        return self.state
+
+    def close(self):
+        pass
+
+    def StatesSet(self):
+        return self.states_set
+
+    def ActionsSet(self):
+        return self.actions_set
+
+    def SetState(self, state):
+        """if state not in self.states_set:
+            raise ValueError("FrozenLake.SetState(): state {} is not part of the states set ({})".format(state, self.states_set))
+        self.frozen_lake.reset()  # In case a previous experiment reached a terminal state
+        self.frozen_lake.s = state
+        self.state = state
+        """
+        raise NotImplementedError("FrozenLake.SetState(): Not allowed by openai gym interface.")
+
+    def step(self, action):
+        observation, reward, done, info = self.frozen_lake.step(action)
+        self.state = self.frozen_lake.s
+        return observation, reward, done, info
+
+    def ComputeTransitionProbabilitiesAndRewards(self, action, state):
+        newState_to_probabilityReward = {}
+        """
+        action: 0 = left     1 = down     2 = right       3 = up
+        """
+        action_to_probStateRewardDoneList = self.frozen_lake.P[state]
+        probStateRewardDoneList = action_to_probStateRewardDoneList[action]
+        for newStateNdx in range(len(probStateRewardDoneList)):
+            newState = probStateRewardDoneList[newStateNdx][1]
+            probability = probStateRewardDoneList[newStateNdx][0]
+            reward = probStateRewardDoneList[newStateNdx][2]
+            newState_to_probabilityReward[newState] = (probability, reward)
+        return newState_to_probabilityReward
+
+
+    def Coordinates(self, state):
+        row = state//self.frozen_lake.ncol
+        column = state - self.frozen_lake.ncol * row
+        return (row, column)
+
+    def StateFromCoordinates(self, row, column):
+        return self.frozen_lake.ncol * row + column

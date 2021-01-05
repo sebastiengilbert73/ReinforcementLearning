@@ -66,20 +66,20 @@ class GamblersProblem(dpenv.DynamicProgrammingEnv):
     def ActionsSet(self):
         return self.actions_set
 
-    def ComputeTransitionProbabilitiesAndRewards(self, action):
+    def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         newState_to_probabilityAndReward_dict = {}
-        if self.state == 0 or self.state == 100:
-            return {self.state: (1, 0)}
+        if state == 0 or state == 100:
+            return {state: (1, 0)}
         stake = action
-        if self.state + stake >= 100:
+        if state + stake >= 100:
             newState_to_probabilityAndReward_dict[100] = (self.heads_probability, 1)
         else:
-            newState_to_probabilityAndReward_dict[self.state + stake] = (self.heads_probability, 0)
+            newState_to_probabilityAndReward_dict[state + stake] = (self.heads_probability, 0)
 
-        if self.state - stake <= 0:
+        if state - stake <= 0:
             newState_to_probabilityAndReward_dict[0] = (1 - self.heads_probability, 0)
         else:
-            newState_to_probabilityAndReward_dict[self.state - stake] = (1 - self.heads_probability, 0)
+            newState_to_probabilityAndReward_dict[state - stake] = (1 - self.heads_probability, 0)
         return newState_to_probabilityAndReward_dict
 
 
