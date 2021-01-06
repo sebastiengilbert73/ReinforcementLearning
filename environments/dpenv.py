@@ -32,10 +32,6 @@ class DynamicProgrammingEnv(abc.ABC, gym.Env):
         pass
 
     @abc.abstractmethod
-    def SetState(self, state):
-        pass
-
-    @abc.abstractmethod
     def ActionsSet(self):
         pass
 
