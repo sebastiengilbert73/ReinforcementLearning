@@ -73,13 +73,12 @@ class EpsilonGreedy(Policy):  # Selects randomly with probability epsilon, other
                               # based on a static state evaluation.
                               # It uses a private playground environment.
     def __init__(self, state_to_value_dict, legal_actions_authority,
-                 environment, epsilon=0.1, gamma=0.9, number_of_trials_per_action=1):
+                 environment, epsilon=0.1, gamma=0.9):
         super().__init__(legal_actions_authority)
         self.state_to_value_dict = copy.deepcopy(state_to_value_dict)  # To avoid unintentional interference
         self.environment = copy.deepcopy(environment)  # To avoid unintentional interference
         self.epsilon = epsilon
         self.gamma = gamma
-        self.number_of_trials_per_action = max(number_of_trials_per_action, 1)  # Should be 1 for deterministic environments
 
     def ActionProbabilities(self, state):
         legal_actions_set = self.legal_actions_authority.LegalActions(state)
@@ -89,16 +88,15 @@ class EpsilonGreedy(Policy):  # Selects randomly with probability epsilon, other
         highest_value = float('-inf')
         best_actions_list = []
         for candidate_action in legal_actions_set:
-            average_value = 0
-            for trialNdx in range(self.number_of_trials_per_action):
-                self.environment.SetState(state)
-                new_state, reward, done, info = self.environment.step(candidate_action)
-                average_value += reward + self.gamma * self.state_to_value_dict[new_state]
-            average_value = average_value / self.number_of_trials_per_action
-            if average_value > highest_value:
-                highest_value = average_value
+            newState_to_probabilityReward = self.environment.TransitionProbabilitiesAndRewards(
+                state, candidate_action)
+            candidate_value = sum(newState_to_probabilityReward[new_state][0] * (
+                newState_to_probabilityReward[new_state][1] + self.gamma * self.state_to_value_dict[new_state]
+            ) for new_state in newState_to_probabilityReward)
+            if candidate_value > highest_value:
+                highest_value = candidate_action
                 best_actions_list = [candidate_action]
-            elif average_value == highest_value:
+            elif candidate_value == highest_value:
                 best_actions_list.append(candidate_action)
         for action in legal_actions_set:
             if action in best_actions_list:
@@ -132,7 +130,7 @@ class PolicyEvaluator:
         Implementation of policy evaluation, Cf. Reinforcement Learning, Sutton and Barto, p. 98
         It uses a private playground environment.
         """
-        self.environment = copy.deepcopy(environment)  # Must implement StatesSet(), SetState(s)
+        self.environment = copy.deepcopy(environment)  # Must implement StatesSet(), TransitionProbabilitiesAndRewards()
         self.gamma = gamma  # The discount factor
         self.minimum_change = minimum_change  # Equivalent of theta in the book
         self.number_of_selections_per_state = number_of_selections_per_state
