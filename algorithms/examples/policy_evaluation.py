@@ -18,7 +18,6 @@ parser.add_argument('--numberOfSelectionsPerState', help="The number of tried se
 parser.add_argument('--maximumNumberOfIterations', help="The maximum number of iterations. Default: 1000", type=int, default=1000)
 parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
 parser.add_argument('--epsilon', help="For epsilon-greedy policies, the probability of choosing a random action. Default: 0.1", type=float, default=0.1)
-parser.add_argument('--numberOfTrialsPerAction', help="For EpsilonGreedy policies, the number of trials per action. For deterministic environments, should be 1. Default: 1", type=int, default=1)
 args = parser.parse_args()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s [%(levelname)s] %(message)s')
@@ -65,8 +64,7 @@ def main():
             legal_actions_authority=legal_actions_authority,
             environment=environment,
             epsilon=args.epsilon,
-            gamma=args.gamma,
-            number_of_trials_per_action=args.numberOfTrialsPerAction
+            gamma=args.gamma
         )
     elif args.policy.lower() == 'gridworld1optimalpolicy':
         evaluated_policy = gridworlds.GridWorld1OptimalPolicy()
