@@ -7,17 +7,27 @@ import ReinforcementLearning.algorithms.policy as rl_policy
 import ReinforcementLearning.environments.dpenv as dpenv
 
 class FrozenLake(dpenv.DynamicProgrammingEnv):
-    def __init__(self, rows=4, columns=4):
+    def __init__(self, size='4x4'):
         super().__init__()
-        self.frozen_lake = gym.make('FrozenLake-v0')
+        if size == '4x4':
+            self.frozen_lake = gym.make('FrozenLake-v0')
+        elif size == '8x8':
+            self.frozen_lake = gym.make('FrozenLake8x8-v0')
+        else:
+            raise NotImplementedError("FrozenLake.__init__(): Not implemented size {}".format(size))
         self.frozen_lake.reset()
         self.actions_set = set(range(4))
-        #self.rows = rows
-        #self.columns = columns
         self.states_set = set(range(self.frozen_lake.nrow * self.frozen_lake.ncol))
-        self.holes = [(1, 1), (1, 3), (2, 3), (3, 0)]
-        self.goals = [(3, 3)]
-
+        self.holes = None
+        if size == '4x4':
+            self.holes = [(1, 1), (1, 3), (2, 3), (3, 0)]
+        elif size == '8x8':
+            self.holes = [(2, 3), (3, 5), (4, 3), (5, 1), (5, 2), (5, 6), (6, 1), (6, 4), (6, 6), (7, 3)]
+        self.goals = None
+        if size == '4x4':
+            self.goals = [(3, 3)]
+        elif size == '8x8':
+            self.goals = [(7, 7)]
 
 
     def render(self):
@@ -55,7 +65,7 @@ class FrozenLake(dpenv.DynamicProgrammingEnv):
         self.state = self.frozen_lake.s
         return observation, reward, done, info
 
-    def ComputeTransitionProbabilitiesAndRewards(self, action, state):
+    def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         newState_to_probabilityReward = {}
         """
         action: 0 = left     1 = down     2 = right       3 = up
