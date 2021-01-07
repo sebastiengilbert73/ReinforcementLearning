@@ -15,7 +15,7 @@ parser.add_argument('--environment', help="The environment to use. Default: 'gri
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
 parser.add_argument('--gamma', help="The discount factor. Default: 0.9", type=float, default=0.9)
 parser.add_argument('--minimumChange', help="For the evaluator, the minimum value change to keep iterating. Default: 0.01", type=float, default=0.01)
-parser.add_argument('--numberOfSelectionsPerState', help="For the evaluator, the number of tried selections per state. Should be 1 if the policy and the environment are deterministic. Default: 100", type=int, default=100)
+#parser.add_argument('--numberOfSelectionsPerState', help="For the evaluator, the number of tried selections per state. Should be 1 if the policy and the environment are deterministic. Default: 100", type=int, default=100)
 parser.add_argument('--evaluatorMaximumNumberOfIterations', help="For the evaluator, the maximum number of iterations. Default: 1000", type=int, default=1000)
 parser.add_argument('--initialValue', help="The initial value for all states. Default: 0", type=float, default=0)
 parser.add_argument('--iteratorMaximumNumberOfIterations', help="For the policy iterator, the maximum number of iterations. Default: 100", type=int, default=100)
@@ -40,8 +40,10 @@ def main():
         environment = jacks_car_rental.JacksCarRental('exercise_4.4')
     elif args.environment.lower() == 'gamblersproblem':
         environment = gamblers_problem.GamblersProblem(heads_probability=0.4)
-    elif args.environment.lower() == 'frozenlake':
-        environment = frozen_lake.FrozenLake()
+    elif args.environment.lower() == 'frozenlake4x4':
+        environment = frozen_lake.FrozenLake(size='4x4')
+    elif args.environment.lower() == 'frozenlake8x8':
+        environment = frozen_lake.FrozenLake(size='8x8')
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 
@@ -61,7 +63,7 @@ def main():
     policy_evaluator = rl_policy.PolicyEvaluator(environment=environment,
                                               gamma=args.gamma,
                                               minimum_change=args.minimumChange,
-                                              number_of_selections_per_state=args.numberOfSelectionsPerState,
+                                              number_of_selections_per_state=1,  # The evaluated policy in the PolicyIterator loop is Greedy, and therefore deterministic
                                               maximum_number_of_iterations=args.evaluatorMaximumNumberOfIterations,
                                               initial_value=args.initialValue
                                               )
