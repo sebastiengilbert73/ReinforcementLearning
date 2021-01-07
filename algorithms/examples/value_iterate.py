@@ -39,8 +39,10 @@ def main():
         environment = jacks_car_rental.JacksCarRental('exercise_4.4')
     elif args.environment.lower() == 'gamblersproblem':
         environment = gamblers_problem.GamblersProblem(heads_probability=0.4)
-    elif args.environment.lower() == 'frozenlake':
-        environment = frozen_lake.FrozenLake()
+    elif args.environment.lower() == 'frozenlake4x4':
+        environment = frozen_lake.FrozenLake(size='4x4')
+    elif args.environment.lower() == 'frozenlake8x8':
+        environment = frozen_lake.FrozenLake(size='8x8')
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 
