@@ -1,7 +1,7 @@
 import logging
 import argparse
 import ReinforcementLearning.algorithms.policy as rl_policy
-import ReinforcementLearning.algorithms.value_iteration as value_iteration
+import ReinforcementLearning.algorithms.dp_iteration as dp_iteration
 import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
 from ReinforcementLearning.environments import jacks_car_rental
@@ -60,7 +60,7 @@ def main():
             "main(): Not implemented legal actions authority '{}'".format(args.legalActionsAuthority))
 
     # Create the value iterator
-    value_iterator = value_iteration.ValueIterator(
+    value_iterator = dp_iteration.ValueIterator(
         environment=environment,
         legal_actions_authority=legal_actions_authority,
         gamma=args.gamma,

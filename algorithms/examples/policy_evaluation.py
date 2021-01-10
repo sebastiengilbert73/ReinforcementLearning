@@ -1,6 +1,7 @@
 import logging
 import argparse
 import ReinforcementLearning.algorithms.policy as policy
+import ReinforcementLearning.algorithms.dp_iteration as dp_iteration
 import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
 from ReinforcementLearning.environments import jacks_car_rental
@@ -76,7 +77,7 @@ def main():
         raise NotImplementedError("main(): Not implemented policy '{}'".format(args.policy))
 
     # Create the policy evaluator
-    policy_evaluator = policy.PolicyEvaluator(environment=environment,
+    policy_evaluator = dp_iteration.PolicyEvaluator(environment=environment,
                                               gamma=args.gamma,
                                               minimum_change=args.minimumChange,
                                               number_of_selections_per_state=args.numberOfSelectionsPerState,

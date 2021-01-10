@@ -1,6 +1,7 @@
 import logging
 import argparse
 import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.algorithms.dp_iteration as dp_iteration
 import ReinforcementLearning.environments as environments
 from ReinforcementLearning.environments import gridworlds
 from ReinforcementLearning.environments import jacks_car_rental
@@ -60,7 +61,7 @@ def main():
         raise NotImplementedError("main(): Not implemented legal actions authority '{}'".format(args.legalActionsAuthority))
 
     # Create the policy evaluator
-    policy_evaluator = rl_policy.PolicyEvaluator(environment=environment,
+    policy_evaluator = dp_iteration.PolicyEvaluator(environment=environment,
                                               gamma=args.gamma,
                                               minimum_change=args.minimumChange,
                                               number_of_selections_per_state=1,  # The evaluated policy in the PolicyIterator loop is Greedy, and therefore deterministic
@@ -69,7 +70,7 @@ def main():
                                               )
 
     # Create the policy iterator
-    policy_iterator = rl_policy.PolicyIterator(
+    policy_iterator = dp_iteration.PolicyIterator(
          environment=environment,
          policy_evaluator=policy_evaluator,
          legal_actions_authority=legal_actions_authority,
