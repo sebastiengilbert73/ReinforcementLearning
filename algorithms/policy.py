@@ -69,42 +69,6 @@ class Random(Policy):  # Selects randomly one of the legal actions
             action_to_probability_dict[action] = 1/len(legal_actions_set)
         return action_to_probability_dict
 
-class EpsilonGreedy(Policy):  # Selects randomly with probability epsilon, otherwise selects the most valuable action,
-                              # based on a static state evaluation.
-                              # It uses a private playground environment.
-    def __init__(self, state_to_value_dict, legal_actions_authority,
-                 environment, epsilon=0.1, gamma=0.9):
-        super().__init__(legal_actions_authority)
-        self.state_to_value_dict = copy.deepcopy(state_to_value_dict)  # To avoid unintentional interference
-        self.environment = copy.deepcopy(environment)  # To avoid unintentional interference
-        self.epsilon = epsilon
-        self.gamma = gamma
-
-    def ActionProbabilities(self, state):
-        legal_actions_set = self.legal_actions_authority.LegalActions(state)
-        if len(legal_actions_set) == 0:
-            return {}
-        action_to_probability_dict = {}
-        highest_value = float('-inf')
-        best_actions_list = []
-        for candidate_action in legal_actions_set:
-            newState_to_probabilityReward = self.environment.TransitionProbabilitiesAndRewards(
-                state, candidate_action)
-            candidate_value = sum(newState_to_probabilityReward[new_state][0] * (
-                newState_to_probabilityReward[new_state][1] + self.gamma * self.state_to_value_dict[new_state]
-            ) for new_state in newState_to_probabilityReward)
-            if candidate_value > highest_value:
-                highest_value = candidate_action
-                best_actions_list = [candidate_action]
-            elif candidate_value == highest_value:
-                best_actions_list.append(candidate_action)
-        for action in legal_actions_set:
-            if action in best_actions_list:
-                action_to_probability_dict[action] = self.epsilon / len(legal_actions_set) + (1 - self.epsilon) / len(best_actions_list)
-            else:
-                action_to_probability_dict[action] = self.epsilon / len(legal_actions_set)
-        return action_to_probability_dict
-
 class Greedy(Policy):
     """
     Always selects the most valuable action, as kept in a table
