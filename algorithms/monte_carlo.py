@@ -7,9 +7,9 @@ class FirstVisitPolicyEvaluator:
     Implements algorithm in 'Reinforcement Learning', Sutton and Barto, p.113
     Environment interface:
         StatesSet()
-        reset()
+        reset() -> observation, reward, done, info
         state
-        step(action)
+        step(action) -> observation, reward, done, info
     Policy interface:
         Select(state)
     """
@@ -38,7 +38,7 @@ class FirstVisitPolicyEvaluator:
             observation_first_visit_is_encountered = {o: False for (o, r) in observationReward_list}
             for observationNdx in range(len(observationReward_list)):
                 (observation, reward) = observationReward_list[observationNdx]
-                if not observation_first_visit_is_encountered[observation]:
+                if observation in states_set and not observation_first_visit_is_encountered[observation]:
                     observationReturn = self.Return(observationReward_list[observationNdx:])
                     state_to_returns_dict[observation].append(observationReturn)
                     observation_first_visit_is_encountered[observation] = True
@@ -51,8 +51,8 @@ class FirstVisitPolicyEvaluator:
 
     def Episode(self, policy):
         observationReward_list = []
-        episode_is_done = False
-        self.environment.reset()
+        observation, reward, episode_is_done, _ = self.environment.reset()
+        observationReward_list.append((observation, reward))
         while not episode_is_done and len(observationReward_list) < self.episode_maximum_length:
             action = policy.Select(self.environment.state)
             observation, reward, episode_is_done, _ = self.environment.step(action)
