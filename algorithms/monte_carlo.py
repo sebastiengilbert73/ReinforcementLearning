@@ -5,6 +5,13 @@ import statistics
 class FirstVisitPolicyEvaluator:
     """
     Implements algorithm in 'Reinforcement Learning', Sutton and Barto, p.113
+    Environment interface:
+        StatesSet()
+        reset()
+        state
+        step(action)
+    Policy interface:
+        Select(state)
     """
     def __init__(self, environment,
                  gamma=0.9,
@@ -25,7 +32,7 @@ class FirstVisitPolicyEvaluator:
         if print_iteration:
             print ("FirstVisitPolicyEvaluator.Evaluate()")
 
-        for iteration in self.number_of_iterations:
+        for iteration in range(self.number_of_iterations):
             # Generate an episode
             observationReward_list = self.Episode(policy)
             observation_first_visit_is_encountered = {o: False for (o, r) in observationReward_list}
@@ -36,7 +43,7 @@ class FirstVisitPolicyEvaluator:
                     state_to_returns_dict[observation].append(observationReturn)
                     observation_first_visit_is_encountered[observation] = True
                     state_to_value_dict[observation] = statistics.mean(state_to_returns_dict[observation])
-            if print_iteration:
+            if print_iteration and iteration % 100 == 1:
                 print('.', end='', flush=True)
         if print_iteration:
             print()
