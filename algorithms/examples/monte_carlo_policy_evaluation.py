@@ -9,6 +9,7 @@ import ReinforcementLearning.environments as environments
 #from ReinforcementLearning.environments import gamblers_problem
 from ReinforcementLearning.environments import blackjack
 import random
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
@@ -66,6 +67,37 @@ def main():
     state_to_value_dict = policy_evaluator.Evaluate(evaluated_policy, print_iteration=True)
     logging.info("Done!")
     print ("state_to_value_dict = \n{}".format(state_to_value_dict))
+
+    WriteOutput(args.environment, args.policy, environment, state_to_value_dict)
+
+def WriteOutput(environment_name, policy_name, environment, state_to_value_dict):
+    if environment_name.lower() == 'blackjack':
+        output_filepath = os.path.join("/tmp/", 'monteCarloPolicyEvaluation_' + policy_name + '_blackjack.csv')
+        with open(output_filepath, 'w+') as output_file:
+            output_file.write("dealer_card:,1,2,3,4,5,6,7,8,9,10\n")
+            usable_ace = True
+            for player_sum in range(21, 11, -1):
+                output_file.write("{},".format(player_sum))
+                for dealer_card in range(1, 11):
+                    state = environment.StateFromTuple((player_sum, dealer_card, usable_ace))
+                    value = state_to_value_dict[state]
+                    output_file.write("{}".format(value))
+                    if dealer_card != 10:
+                        output_file.write(',')
+                output_file.write("\n")
+            output_file.write("\n")
+            usable_ace = False
+            for player_sum in range(21, 11, -1):
+                output_file.write("{},".format(player_sum))
+                for dealer_card in range(1, 11):
+                    state = environment.StateFromTuple((player_sum, dealer_card, usable_ace))
+                    value = state_to_value_dict[state]
+                    output_file.write("{}".format(value))
+                    if dealer_card != 10:
+                        output_file.write(',')
+                output_file.write("\n")
+    else:
+        logging.info("We're not writing anything for environment {}".format(environment_name))
 
 
 if __name__ == '__main__':
