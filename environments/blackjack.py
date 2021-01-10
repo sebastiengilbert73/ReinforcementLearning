@@ -20,6 +20,12 @@ class Blackjack:
     def reset(self):
         (player_sum, dealer_card, usable_ace) = self.blackjack_env.reset()
         self.state = self.StateFromTuple((player_sum, dealer_card, usable_ace))
+        done = False
+        reward = 0
+        if player_sum == 21:
+            done = True
+            reward = 1
+        return (self.state, reward, done, {})
 
     @staticmethod
     def StateFromTuple(playerSum_dealerCard_usableAce):
@@ -45,10 +51,10 @@ class Blackjack:
 
     def step(self, action):
         obs, reward, done, info = self.blackjack_env.step(action)
-        if done:
-            self.state = self.terminal_state
-        else:
-            self.state = self.StateFromTuple(obs)
+        #if done:
+        #    self.state = self.terminal_state
+        #else:
+        self.state = self.StateFromTuple(obs)
         return (self.state, reward, done, info)
 
     def StatesSet(self):
