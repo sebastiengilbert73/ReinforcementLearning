@@ -4,10 +4,11 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
-import ReinforcementLearning.environments.dpenv as dpenv
+#import ReinforcementLearning.environments.dpenv as dpenv
+import ReinforcementLearning.environments.attributes as env_attributes
 import math
 
-class GamblersProblem(dpenv.DynamicProgrammingEnv):
+class GamblersProblem(env_attributes.TabulatableDP):
     def __init__(self, heads_probability=0.5):
         super().__init__()
         self.heads_probability = heads_probability

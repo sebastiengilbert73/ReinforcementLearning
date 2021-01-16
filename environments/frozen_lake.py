@@ -4,9 +4,10 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
-import ReinforcementLearning.environments.dpenv as dpenv
+#import ReinforcementLearning.environments.dpenv as dpenv
+import ReinforcementLearning.environments.attributes as env_attributes
 
-class FrozenLake(dpenv.DynamicProgrammingEnv):
+class FrozenLake(env_attributes.TabulatableDP):
     def __init__(self, size='4x4'):
         super().__init__()
         if size == '4x4':

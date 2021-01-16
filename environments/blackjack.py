@@ -4,8 +4,10 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.environments.attributes as env_attributes
 
-class Blackjack:
+class Blackjack(env_attributes.GymCompatible,
+                env_attributes.Tabulatable):
     def __init__(self):
         self.blackjack_env = gym.make('Blackjack-v0')
         self.reset()

@@ -2,7 +2,7 @@ import abc
 import gym
 
 
-class GymCompatible(gym.Env):
+class GymCompatible(abc.ABC, gym.Env):
     def __init__(self):
         super(gym.Env).__init__()
 
@@ -26,6 +26,10 @@ class GymCompatible(gym.Env):
     def seed(self, seed):
         pass
 
+    @abc.abstractmethod
+    def ActionsSet(self):
+        pass
+
 class ExplorationStarts(abc.ABC):
     @abc.abstractmethod
     def SetState(self, state):
@@ -37,10 +41,11 @@ class DynamicProgramming(abc.ABC):
         pass
 
 class Tabulatable(abc.ABC):
+    @abc.abstractmethod
     def StatesSet(self):
         pass
 
-class TabulatableDP(abc.ABC, Tabulatable, DynamicProgramming):
+class TabulatableDP(Tabulatable, DynamicProgramming):
     def __init__(self):
         self.originStateAction_to_newStateToProbabilityReward = {}  # The cached transition probabilities and rewards
 

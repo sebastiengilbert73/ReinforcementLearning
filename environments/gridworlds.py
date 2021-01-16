@@ -4,10 +4,12 @@ from gym.utils import seeding
 import numpy as np
 import random
 import ReinforcementLearning.algorithms.policy as rl_policy
-import ReinforcementLearning.environments.dpenv as dpenv
+#import ReinforcementLearning.environments.dpenv as dpenv
+import ReinforcementLearning.environments.attributes as env_attributes
 
 
-class GridWorld1(dpenv.DynamicProgrammingEnv):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
+class GridWorld1(env_attributes.TabulatableDP,
+                 env_attributes.GymCompatible):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     metadata = {
         'render.modes': ['human']
@@ -152,7 +154,9 @@ class GridWorld1(dpenv.DynamicProgrammingEnv):  # Cf. 'Reinforcement Learning', 
             new_state_to_probability_reward[new_state] = (probability, reward)
         return new_state_to_probability_reward
 
-class GridWorld2x2(dpenv.DynamicProgrammingEnv):
+
+class GridWorld2x2(env_attributes.TabulatableDP,
+                 env_attributes.GymCompatible):
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     # Random policy, gamma=0.9:
     #       final exact values:     V0 = 7.316; V1 = 2.573; V2 = 2.573; V3 = 1.196
