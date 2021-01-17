@@ -1,6 +1,7 @@
 import random
 import copy
 import statistics
+import ReinforcementLearning.environments.attributes as env_attributes
 
 class FirstVisitPolicyEvaluator:
     """
@@ -18,6 +19,10 @@ class FirstVisitPolicyEvaluator:
                  number_of_iterations=1000,
                  initial_value=0,
                  episode_maximum_length=1000):
+        if not isinstance(environment, env_attributes.Tabulatable):
+            raise TypeError("FirstVisitPolicyEvaluator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.Tabulatable".format(type(environment)))
+        if not isinstance(environment, env_attributes.GymCompatible):
+            raise TypeError("FirstVisitPolicyEvaluator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.GymCompatible".format(type(environment)))
         self.environment = copy.deepcopy(environment)
         self.gamma = gamma
         self.number_of_iterations = number_of_iterations

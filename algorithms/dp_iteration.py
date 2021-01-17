@@ -1,6 +1,7 @@
 import random
 import copy
 import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.environments.attributes as env_attributes
 
 class PolicyEvaluator:
     def __init__(self, environment,
@@ -13,6 +14,8 @@ class PolicyEvaluator:
         Implementation of policy evaluation, Cf. Reinforcement Learning, Sutton and Barto, p. 98
         It uses a private playground environment.
         """
+        if not isinstance(environment, env_attributes.DynamicProgramming):
+            raise TypeError("PolicyEvaluator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.DynamicProgramming".format(type(environment)))
         self.environment = copy.deepcopy(environment)  # Must implement StatesSet(), TransitionProbabilitiesAndRewards()
         self.gamma = gamma  # The discount factor
         self.minimum_change = minimum_change  # Equivalent of theta in the book
@@ -59,6 +62,8 @@ class PolicyIterator:
                  gamma=0.9,
                  maximum_number_of_iterations=100,
                  print_steps=False):
+        if not isinstance(environment, env_attributes.DynamicProgramming):
+            raise TypeError("PolicyIterator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.DynamicProgramming".format(type(environment)))
         self.environment = copy.deepcopy(environment)
         self.policy_evaluator = policy_evaluator
         self.legal_actions_authority = legal_actions_authority
@@ -132,6 +137,8 @@ class ValueIterator:
                  gamma,
                  minimum_change,
                  maximum_number_of_iterations):
+        if not isinstance(environment, env_attributes.DynamicProgramming):
+            raise TypeError("ValueIterator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.DynamicProgramming".format(type(environment)))
         self.environment = copy.deepcopy(environment)
         self.legal_actions_authority = legal_actions_authority
         self.gamma = gamma
@@ -179,6 +186,8 @@ class EpsilonGreedy(rl_policy.Policy):
     def __init__(self, state_to_value_dict, legal_actions_authority,
                  environment, epsilon=0.1, gamma=0.9):
         super().__init__(legal_actions_authority)
+        if not isinstance(environment, env_attributes.TransitionDynamics):
+            raise TypeError("EpsilonGreedy.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.TransitionDynamics".format(type(environment)))
         self.state_to_value_dict = copy.deepcopy(state_to_value_dict)  # To avoid unintentional interference
         self.environment = copy.deepcopy(environment)  # To avoid unintentional interference
         self.epsilon = epsilon
