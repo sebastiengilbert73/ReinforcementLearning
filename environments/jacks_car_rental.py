@@ -9,7 +9,7 @@ import ReinforcementLearning.environments.attributes as env_attributes
 import math
 
 
-class JacksCarRental(env_attributes.TabulatableDP):
+class JacksCarRental(env_attributes.DynamicProgramming):
     # Cf. 'Reinforcement Learning', Sutton and Barto, p. 98
     metadata = {
         'render.modes': ['human']

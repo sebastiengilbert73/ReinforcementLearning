@@ -97,7 +97,8 @@ if __name__ == '__main__':
 
         # Call TransitionProbabilitiesAndRewards(action)
         environment.SetState(args.state)
-        coded_new_state_to_probability_reward = environment.TransitionProbabilitiesAndRewards(args.action)
+        coded_new_state_to_probability_reward = environment.TransitionProbabilitiesAndRewards(
+            args.state, args.action)
 
         # Display the comparison
         print("{:<30}{:<30}{:<30}{:<30}{:<30}".format("new_state", "simulated probability", "coded_probability", "simulated expected reward", "coded expected reward"))

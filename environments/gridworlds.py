@@ -8,7 +8,7 @@ import ReinforcementLearning.algorithms.policy as rl_policy
 import ReinforcementLearning.environments.attributes as env_attributes
 
 
-class GridWorld1(env_attributes.TabulatableDP,
+class GridWorld1(env_attributes.DynamicProgramming,
                  env_attributes.GymCompatible):  # Cf. 'Reinforcement Learning', Sutton and Barto, p.71
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     metadata = {
@@ -155,7 +155,7 @@ class GridWorld1(env_attributes.TabulatableDP,
         return new_state_to_probability_reward
 
 
-class GridWorld2x2(env_attributes.TabulatableDP,
+class GridWorld2x2(env_attributes.DynamicProgramming,
                  env_attributes.GymCompatible):
     # Class structure inspired by https://github.com/openai/gym/blob/master/gym/envs/classic_control/pendulum.py
     # Random policy, gamma=0.9:

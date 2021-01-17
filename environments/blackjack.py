@@ -59,6 +59,9 @@ class Blackjack(env_attributes.GymCompatible,
         self.state = self.StateFromTuple(obs)
         return (self.state, reward, done, info)
 
+    def close(self):
+        pass
+
     def StatesSet(self):
         return self.states_set
 

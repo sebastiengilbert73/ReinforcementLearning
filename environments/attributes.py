@@ -35,7 +35,7 @@ class ExplorationStarts(abc.ABC):
     def SetState(self, state):
         pass
 
-class DynamicProgramming(abc.ABC):
+class TransitionDynamics(abc.ABC):
     @abc.abstractmethod
     def TransitionProbabilitiesAndRewards(self, state, action):
         pass
@@ -45,7 +45,7 @@ class Tabulatable(abc.ABC):
     def StatesSet(self):
         pass
 
-class TabulatableDP(Tabulatable, DynamicProgramming):
+class DynamicProgramming(Tabulatable, TransitionDynamics):
     def __init__(self):
         self.originStateAction_to_newStateToProbabilityReward = {}  # The cached transition probabilities and rewards
 

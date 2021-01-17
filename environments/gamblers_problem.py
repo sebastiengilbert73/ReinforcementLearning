@@ -8,7 +8,7 @@ import ReinforcementLearning.algorithms.policy as rl_policy
 import ReinforcementLearning.environments.attributes as env_attributes
 import math
 
-class GamblersProblem(env_attributes.TabulatableDP):
+class GamblersProblem(env_attributes.DynamicProgramming):
     def __init__(self, heads_probability=0.5):
         super().__init__()
         self.heads_probability = heads_probability

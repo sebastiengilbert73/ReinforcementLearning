@@ -7,7 +7,7 @@ import ReinforcementLearning.algorithms.policy as rl_policy
 #import ReinforcementLearning.environments.dpenv as dpenv
 import ReinforcementLearning.environments.attributes as env_attributes
 
-class FrozenLake(env_attributes.TabulatableDP):
+class FrozenLake(env_attributes.DynamicProgramming):
     def __init__(self, size='4x4'):
         super().__init__()
         if size == '4x4':
