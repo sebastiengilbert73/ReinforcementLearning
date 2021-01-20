@@ -11,6 +11,7 @@ class FirstVisitPolicyEvaluator:
         reset() -> observation, reward, done, info
         state
         step(action) -> observation, reward, done, info
+        Episode(policy, maximum_number_of_steps)
     Policy interface:
         Select(state)
     """
@@ -23,6 +24,10 @@ class FirstVisitPolicyEvaluator:
             raise TypeError("FirstVisitPolicyEvaluator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.Tabulatable".format(type(environment)))
         if not isinstance(environment, env_attributes.GymCompatible):
             raise TypeError("FirstVisitPolicyEvaluator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.GymCompatible".format(type(environment)))
+        if not isinstance(environment, env_attributes.Episodic):
+            raise TypeError(
+                "FirstVisitPolicyEvaluator.__init__(): The environment type ({}) is not an instance of ReinforcementLearning.environments.attributes.Episodic".format(
+                    type(environment)))
         self.environment = copy.deepcopy(environment)
         self.gamma = gamma
         self.number_of_iterations = number_of_iterations
@@ -39,7 +44,7 @@ class FirstVisitPolicyEvaluator:
 
         for iteration in range(self.number_of_iterations):
             # Generate an episode
-            observationReward_list = self.Episode(policy)
+            observationReward_list = self.environment.Episode(policy, maximum_number_of_steps=self.episode_maximum_length)
             observation_first_visit_is_encountered = {o: False for (o, r) in observationReward_list}
             for observationNdx in range(len(observationReward_list)):
                 (observation, reward) = observationReward_list[observationNdx]
@@ -54,7 +59,7 @@ class FirstVisitPolicyEvaluator:
             print()
         return state_to_value_dict
 
-    def Episode(self, policy):
+    """def Episode(self, policy):
         observationReward_list = []
         observation, reward, episode_is_done, _ = self.environment.reset()
         observationReward_list.append((observation, reward))
@@ -63,6 +68,7 @@ class FirstVisitPolicyEvaluator:
             observation, reward, episode_is_done, _ = self.environment.step(action)
             observationReward_list.append((observation, reward))
         return observationReward_list
+    """
 
     def Return(self, observationReward_list):
         discounted_sum = 0
