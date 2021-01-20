@@ -81,3 +81,81 @@ class HitUpTo(rl_policy.Policy):
             return {0: 0, 1: 1}  # Hit
         else:
             return {0: 1, 1: 0}  # Stand
+
+
+class BlackjackES(env_attributes.GymCompatible,
+                  env_attributes.Tabulatable,
+                  env_attributes.ExplorationStarts):
+    def __init__(self):
+        super(env_attributes.GymCompatible).__init__()
+        super(env_attributes.Tabulatable).__init__()
+        super(env_attributes.ExplorationStarts).__init__()
+        self.state = None
+        self.reset()
+        self.actions_set = set(range(2))  # 0 = stand;  1 = hit
+        self.states_set = self.BuildStatesSet()
+
+    def step(self, action):
+        # return (observation, reward, done, info_dict)
+        if action == 0:  # stand
+            pass
+
+    def reset(self):
+        usable_ace = False
+        card1 = random.randint(1, 11)
+        card2 = random.randint(1, 11)
+        if card1 == 11 or card2 == 11:
+            usable_ace = True
+        sum = card1 + card2
+        if sum == 22:  # two aces
+            sum = 12
+
+        dealer_card = random.randint(1, 11)
+        self.state = (sum, usable_ace, dealer_card)
+        done = False
+        reward = 0
+        if sum == 21:
+            done = True
+            reward = 1
+        return (self.state, reward, done, {})
+
+    def render(self, mode):
+        print(self.state)
+
+    def close(self):
+        pass
+
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
+
+    def ActionsSet(self):
+        return self.actions_set
+
+    def SetState(self, sum_usableAce_dealerCard):
+        if not isinstance(sum_usableAce_dealerCard, tuple):
+            raise TypeError("BlackjackES.SetState(): The passed object {} is not a tuple".format(sum_usableAce_dealerCard))
+        if len(sum_usableAce_dealerCard) != 3:
+            raise ValueError("The length of the passed tuple object ({}) is not 3".format(len(sum_usableAce_dealerCard)))
+
+        self.state = sum_usableAce_dealerCard
+        done = False
+        reward = 0
+        if sum_usableAce_dealerCard[0] == 21 and sum_usableAce_dealerCard[1] == True:
+            done = True
+            reward = 1
+        if sum_usableAce_dealerCard[0] > 21:
+            done = True
+        return (self.state, reward, done, {})
+
+    def BuildStatesSet(self):
+        states_set = set()
+        for sum in range(12, 22):  # 10 cases
+            for usable_ace in range(0, 2):  # 2 cases
+                has_useable_ace = (usable_ace == 1)
+                for dealer_card in range(1, 11):  # 10 cases
+                    states_set.add((sum, has_useable_ace, dealer_card))
+        return states_set
+
+    def StatesSet(self):
+        return self.states_set
