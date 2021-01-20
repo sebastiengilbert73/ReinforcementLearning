@@ -1,5 +1,6 @@
 import abc
 import gym
+import sys
 
 
 class GymCompatible(abc.ABC, gym.Env):
@@ -12,7 +13,7 @@ class GymCompatible(abc.ABC, gym.Env):
 
     @abc.abstractmethod
     def reset(self):
-        pass  # return self.state
+        pass  # return (observation, reward, done, info_dict)
 
     @abc.abstractmethod
     def render(self, mode):
@@ -32,7 +33,7 @@ class GymCompatible(abc.ABC, gym.Env):
 
 class ExplorationStarts(abc.ABC):
     @abc.abstractmethod
-    def SetState(self, state):
+    def SetState(self, state):  # return (observation, reward, done, info_dict)
         pass
 
 class TransitionDynamics(abc.ABC):
@@ -58,3 +59,26 @@ class DynamicProgramming(Tabulatable, TransitionDynamics):
     def ComputeTransitionProbabilitiesAndRewards(self, state, action):
         pass  # return newState_to_probabilityAndReward_dict
 
+class Episodic(GymCompatible):
+    def Episode(self, policy, start_state=None, maximum_number_of_steps=None):
+        observationReward_list = []
+        observation = None
+        reward = 0
+        episode_is_done = False
+        info = {}
+        if start_state is not None:
+            if not isinstance(self, ExplorationStarts):
+                raise TypeError("Episodic.Episode(): The start state is not None and the environment is not an instance of ReinforcementLearning.environments.attributes.ExplorationStarts")
+            (observation, reward, episode_is_done, info) = self.SetState(start_state)
+            observationReward_list.append((observation, reward))
+        else:
+            (observation, reward, episode_is_done, info) = self.reset()
+            observationReward_list.append((observation, reward))
+        if maximum_number_of_steps is None:
+            maximum_number_of_steps = sys.maxsize
+
+        while not episode_is_done and len(observationReward_list) < maximum_number_of_steps:
+            action = policy.Select(observation)
+            observation, reward, episode_is_done, info = self.step(action)
+            observationReward_list.append((observation, reward))
+        return observationReward_list
