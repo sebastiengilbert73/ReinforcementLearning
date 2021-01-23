@@ -77,7 +77,7 @@ class Episodic(GymCompatible):
         if maximum_number_of_steps is None:
             maximum_number_of_steps = sys.maxsize
 
-        while not episode_is_done and len(observationReward_list) < maximum_number_of_steps:
+        while not episode_is_done and len(observationReward_list) < maximum_number_of_steps + 1:
             action = policy.Select(observation)
             observation, reward, episode_is_done, info = self.step(action)
             observationReward_list.append((observation, reward))
