@@ -3,6 +3,14 @@ import copy
 import statistics
 import ReinforcementLearning.environments.attributes as env_attributes
 
+
+def Return(observationReward_list, gamma):
+    discounted_sum = 0
+    for observationNdx in range(len(observationReward_list)):
+        discount = pow(gamma, observationNdx)
+        discounted_sum += discount * observationReward_list[observationNdx][1]
+    return discounted_sum
+
 class FirstVisitPolicyEvaluator:
     """
     Implements algorithm in 'Reinforcement Learning', Sutton and Barto, p.113
@@ -49,7 +57,7 @@ class FirstVisitPolicyEvaluator:
             for observationNdx in range(len(observationReward_list)):
                 (observation, reward) = observationReward_list[observationNdx]
                 if observation in states_set and not observation_first_visit_is_encountered[observation]:
-                    observationReturn = self.Return(observationReward_list[observationNdx:])
+                    observationReturn = Return(observationReward_list[observationNdx:], self.gamma)
                     state_to_returns_dict[observation].append(observationReturn)
                     observation_first_visit_is_encountered[observation] = True
                     state_to_value_dict[observation] = statistics.mean(state_to_returns_dict[observation])
@@ -58,21 +66,3 @@ class FirstVisitPolicyEvaluator:
         if print_iteration:
             print()
         return state_to_value_dict
-
-    """def Episode(self, policy):
-        observationReward_list = []
-        observation, reward, episode_is_done, _ = self.environment.reset()
-        observationReward_list.append((observation, reward))
-        while not episode_is_done and len(observationReward_list) < self.episode_maximum_length:
-            action = policy.Select(self.environment.state)
-            observation, reward, episode_is_done, _ = self.environment.step(action)
-            observationReward_list.append((observation, reward))
-        return observationReward_list
-    """
-
-    def Return(self, observationReward_list):
-        discounted_sum = 0
-        for observationNdx in range(len(observationReward_list)):
-            discount = pow(self.gamma, observationNdx)
-            discounted_sum += discount * observationReward_list[observationNdx][1]
-        return discounted_sum
