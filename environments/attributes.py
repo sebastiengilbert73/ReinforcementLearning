@@ -61,7 +61,8 @@ class DynamicProgramming(Tabulatable, TransitionDynamics):
 
 class Episodic(GymCompatible):
     def Episode(self, policy, start_state=None, maximum_number_of_steps=None):
-        observationReward_list = []
+        # returns [reward0, obs0, action1, reward1, obs1, action2, reward2, obs2, ..., obsN-1]
+        observationActionReward_list = []
         observation = None
         reward = 0
         episode_is_done = False
@@ -70,15 +71,20 @@ class Episodic(GymCompatible):
             if not isinstance(self, ExplorationStarts):
                 raise TypeError("Episodic.Episode(): The start state is not None and the environment is not an instance of ReinforcementLearning.environments.attributes.ExplorationStarts")
             (observation, reward, episode_is_done, info) = self.SetState(start_state)
-            observationReward_list.append((observation, reward))
+            observationActionReward_list.append(reward)
+            observationActionReward_list.append(observation)
         else:
             (observation, reward, episode_is_done, info) = self.reset()
-            observationReward_list.append((observation, reward))
+            observationActionReward_list.append(reward)
+            observationActionReward_list.append(observation)
         if maximum_number_of_steps is None:
             maximum_number_of_steps = sys.maxsize
-
-        while not episode_is_done and len(observationReward_list) < maximum_number_of_steps + 1:
+        number_of_steps = 0
+        while not episode_is_done and number_of_steps < maximum_number_of_steps:
             action = policy.Select(observation)
+            observationActionReward_list.append(action)
             observation, reward, episode_is_done, info = self.step(action)
-            observationReward_list.append((observation, reward))
-        return observationReward_list
+            observationActionReward_list.append(reward)
+            observationActionReward_list.append(observation)
+            number_of_steps += 1
+        return observationActionReward_list
