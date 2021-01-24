@@ -76,7 +76,7 @@ class HitUpTo(rl_policy.Policy):
 
     def ActionProbabilities(self, state):
         # return action_to_probability_dict
-        (player_sum, dealer_card, usable_ace) = Blackjack.TupleFromState(state)
+        (player_sum, usable_ace, dealer_card) = state
         if player_sum <= self.maximum_hit_value:
             return {0: 0, 1: 1}  # Hit
         else:
@@ -90,6 +90,7 @@ class BlackjackES(env_attributes.Tabulatable,
         super(env_attributes.GymCompatible).__init__()
         super(env_attributes.Tabulatable).__init__()
         super(env_attributes.ExplorationStarts).__init__()
+        super(env_attributes.Episodic).__init__()
         self.state = None
         self.reset()
         self.actions_set = set(range(2))  # 0 = stand;  1 = hit
