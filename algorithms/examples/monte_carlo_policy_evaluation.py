@@ -13,7 +13,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
-parser.add_argument('--environment', help="The environment to use. Default: 'blackjack'", default='blackjack')
+parser.add_argument('--environment', help="The environment to use. Default: 'BlackjackES'", default='BlackjackES')
 parser.add_argument('--legalActionsAuthority', help="The authority that filters the legal actions. Default: 'AllActionsLegal'", default='AllActionsLegal')
 parser.add_argument('--policy', help="The policy. Default: 'random'", default='random')
 parser.add_argument('--gamma', help="The discount factor. Default: 0.9", type=float, default=0.9)
@@ -31,8 +31,8 @@ def main():
 
     # Create the environment
     environment = None
-    if args.environment.lower() == 'blackjack':
-        environment = blackjack.Blackjack()
+    if args.environment.lower() == 'blackjackes':
+        environment = blackjack.BlackjackES()
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 
@@ -71,15 +71,15 @@ def main():
     WriteOutput(args.environment, args.policy, environment, state_to_value_dict)
 
 def WriteOutput(environment_name, policy_name, environment, state_to_value_dict):
-    if environment_name.lower() == 'blackjack':
-        output_filepath = os.path.join("/tmp/", 'monteCarloPolicyEvaluation_' + policy_name + '_blackjack.csv')
+    if environment_name.lower() == 'blackjackes':
+        output_filepath = os.path.join("/tmp/", 'monteCarloPolicyEvaluation_' + policy_name + '_BlackjackES.csv')
         with open(output_filepath, 'w+') as output_file:
             output_file.write("dealer_card:,1,2,3,4,5,6,7,8,9,10\n")
             usable_ace = True
             for player_sum in range(21, 11, -1):
                 output_file.write("{},".format(player_sum))
                 for dealer_card in range(1, 11):
-                    state = environment.StateFromTuple((player_sum, dealer_card, usable_ace))
+                    state =(player_sum, usable_ace, dealer_card)
                     value = state_to_value_dict[state]
                     output_file.write("{}".format(value))
                     if dealer_card != 10:
@@ -90,7 +90,7 @@ def WriteOutput(environment_name, policy_name, environment, state_to_value_dict)
             for player_sum in range(21, 11, -1):
                 output_file.write("{},".format(player_sum))
                 for dealer_card in range(1, 11):
-                    state = environment.StateFromTuple((player_sum, dealer_card, usable_ace))
+                    state = (player_sum, usable_ace, dealer_card)
                     value = state_to_value_dict[state]
                     output_file.write("{}".format(value))
                     if dealer_card != 10:
