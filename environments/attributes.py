@@ -60,7 +60,10 @@ class DynamicProgramming(Tabulatable, TransitionDynamics):
         pass  # return newState_to_probabilityAndReward_dict
 
 class Episodic(GymCompatible):
-    def Episode(self, policy, start_state=None, maximum_number_of_steps=None):
+    def Episode(self, policy,
+                start_state=None,
+                start_action=None,
+                maximum_number_of_steps=None):
         # returns [reward0, obs0, action1, reward1, obs1, action2, reward2, obs2, ..., obsN-1]
         observationActionReward_list = []
         observation = None
@@ -77,9 +80,15 @@ class Episodic(GymCompatible):
             (observation, reward, episode_is_done, info) = self.reset()
             observationActionReward_list.append(reward)
             observationActionReward_list.append(observation)
+        number_of_steps = 0
         if maximum_number_of_steps is None:
             maximum_number_of_steps = sys.maxsize
-        number_of_steps = 0
+        if start_action is not None:
+            observationActionReward_list.append(start_action)
+            observation, reward, episode_is_done, info = self.step(start_action)
+            observationActionReward_list.append(reward)
+            observationActionReward_list.append(observation)
+            number_of_steps += 1
         while not episode_is_done and number_of_steps < maximum_number_of_steps:
             action = policy.Select(observation)
             observationActionReward_list.append(action)
@@ -88,3 +97,16 @@ class Episodic(GymCompatible):
             observationActionReward_list.append(observation)
             number_of_steps += 1
         return observationActionReward_list
+
+    @staticmethod
+    def StateActionPairs(episode):
+        # episode = [reward0, obs0, action1, reward1, obs1, action2, reward2, obs2, ..., obsN - 1]
+        if len(episode)%3 != 2:
+            raise ValueError("Episodic.StateActionPairs(): The length of the episode ({}) modulo 3 is not 2".format(len(episode)))
+        stateAction_pairs = []
+        number_of_actions = len(episode)//3
+        for stepNdx in range(number_of_actions):
+            stateNdx = 3 * stepNdx + 1
+            actionNdx = 3 * stepNdx + 2
+            stateAction_pairs.append((episode[stateNdx], episode[actionNdx]))
+        return stateAction_pairs
