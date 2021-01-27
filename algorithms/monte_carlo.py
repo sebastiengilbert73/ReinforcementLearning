@@ -124,33 +124,37 @@ class MonteCarloESPolicyIterator:
 
         for iteration in self.number_of_iterations:
             for start_state in states_set:
-                episode = self.environment.Episode(policy, start_state=start_state,
-                                                   maximum_number_of_steps=self.episode_maximum_length)
-                stateAction_pairs = self.environment.StateActionPairs(episode)
-                rewards_list = [episode[ndx] for ndx in
-                                range(len(episode)) if ndx % 3 == 0]
-                rewards_list = rewards_list[1:]  # Get rid of reward 0, as it is not the consequence of an action
-                if len(stateAction_pairs) != len(rewards_list):
-                    raise ValueError("len(stateAction_pairs) ({}) != len(rewards_list) ({})".format(len(stateAction_pairs), len(rewards_list)))
-                stateAction_is_encountered = {stateAction: False for stateAction in stateAction_pairs}
-                for stateActionNdx in range(len(stateAction_pairs)):
-                    stateAction = stateAction_pairs[stateActionNdx]
-                    if not stateAction_is_encountered[stateAction]:
-                        return_value = Return(rewards_list[stateActionNdx:], self.gamma)
-                        stateAction_to_returns[stateAction].append(return_value)
-                        stateAction_to_value[stateAction] = statistics.mean(stateAction_to_returns[stateAction])
-                        stateAction_is_encountered[stateAction] = True
-                # Update policy through state_to_mostValuableAction
-                visited_states_list = [s for (s, a) in stateAction_pairs]
-                for visited_state in visited_states_list:
-                    legal_actions = self.legal_actions_authority.LegalActions(visited_state)
-                    highest_value = float('-inf')
-                    most_valuable_action = None
-                    for action in legal_actions:
-                        action_value = stateAction_to_value[(visited_state, action)]
-                        if action_value > highest_value:
-                            highest_value = action_value
-                            most_valuable_action = action
-                    state_to_mostValuableAction[visited_state] = most_valuable_action
-                policy = rl_policy.Greedy(state_to_mostValuableAction, self.legal_actions_authority)
+                start_legal_actions = self.legal_actions_authority.LegalActions(start_state)
+                for start_legal_action in start_legal_actions:
+                    episode = self.environment.Episode(policy,
+                                                       start_state=start_state,
+                                                       start_action=start_legal_action,
+                                                       maximum_number_of_steps=self.episode_maximum_length)
+                    stateAction_pairs = self.environment.StateActionPairs(episode)
+                    rewards_list = [episode[ndx] for ndx in
+                                    range(len(episode)) if ndx % 3 == 0]
+                    rewards_list = rewards_list[1:]  # Get rid of reward 0, as it is not the consequence of an action
+                    if len(stateAction_pairs) != len(rewards_list):
+                        raise ValueError("len(stateAction_pairs) ({}) != len(rewards_list) ({})".format(len(stateAction_pairs), len(rewards_list)))
+                    stateAction_is_encountered = {stateAction: False for stateAction in stateAction_pairs}
+                    for stateActionNdx in range(len(stateAction_pairs)):
+                        stateAction = stateAction_pairs[stateActionNdx]
+                        if not stateAction_is_encountered[stateAction]:
+                            return_value = Return(rewards_list[stateActionNdx:], self.gamma)
+                            stateAction_to_returns[stateAction].append(return_value)
+                            stateAction_to_value[stateAction] = statistics.mean(stateAction_to_returns[stateAction])
+                            stateAction_is_encountered[stateAction] = True
+                    # Update policy through state_to_mostValuableAction
+                    visited_states_list = [s for (s, a) in stateAction_pairs]
+                    for visited_state in visited_states_list:
+                        legal_actions = self.legal_actions_authority.LegalActions(visited_state)
+                        highest_value = float('-inf')
+                        most_valuable_action = None
+                        for action in legal_actions:
+                            action_value = stateAction_to_value[(visited_state, action)]
+                            if action_value > highest_value:
+                                highest_value = action_value
+                                most_valuable_action = action
+                        state_to_mostValuableAction[visited_state] = most_valuable_action
+                    policy = rl_policy.Greedy(state_to_mostValuableAction, self.legal_actions_authority)
         return policy
