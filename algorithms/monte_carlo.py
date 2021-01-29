@@ -82,25 +82,25 @@ class MonteCarloESPolicyIterator:
         ExplorationStarts
     """
     def __init__(self,
-                 enviroment,
+                 environment,
                  legal_actions_authority,
                  gamma=0.9,
                  number_of_iterations=1000,
                  initial_value=0,
                  episode_maximum_length=1000
                  ):
-        if not isinstance(enviroment, env_attributes.Tabulatable):
-            raise TypeError("MonteCarloESPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.Tabulatable".format(enviroment))
-        if not isinstance(enviroment, env_attributes.Episodic):
+        if not isinstance(environment, env_attributes.Tabulatable):
+            raise TypeError("MonteCarloESPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.Tabulatable".format(environment))
+        if not isinstance(environment, env_attributes.Episodic):
             raise TypeError(
-                "MonteCarloESPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.Episodic".format(enviroment))
-        if not isinstance(enviroment, env_attributes.ExplorationStarts):
+                "MonteCarloESPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.Episodic".format(environment))
+        if not isinstance(environment, env_attributes.ExplorationStarts):
             raise TypeError(
-                "MonteCarloESPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.ExplorationStarts".format(enviroment))
+                "MonteCarloESPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.ExplorationStarts".format(environment))
         if not isinstance(legal_actions_authority, rl_policy.LegalActionsAuthority):
             raise TypeError(
                 "MonteCarloESPolicyIterator.__init__(): The legal_actions_authority {} is not an instance of ReinforcementLearning.algorithms.LegalActionsAuthority".format(legal_actions_authority))
-        self.environment = enviroment
+        self.environment = environment
         self.legal_actions_authority = legal_actions_authority
         self.gamma = gamma
         self.number_of_iterations = number_of_iterations
@@ -122,7 +122,7 @@ class MonteCarloESPolicyIterator:
                 stateAction_to_returns[(state, action)] = []
         policy = rl_policy.Greedy(state_to_mostValuableAction, self.legal_actions_authority)
 
-        for iteration in self.number_of_iterations:
+        for iteration in range(self.number_of_iterations):
             for start_state in states_set:
                 start_legal_actions = self.legal_actions_authority.LegalActions(start_state)
                 for start_legal_action in start_legal_actions:
