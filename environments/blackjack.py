@@ -197,7 +197,17 @@ class BlackjackES(env_attributes.Tabulatable,
         reward = 0
         if sum == 21:
             done = True
-            reward = 1
+            # Check if the dealer has a natural as well:
+            if dealer_card == 10:
+                dealer_second_card = random.randint(1, 13)
+                if dealer_second_card == 1:
+                    reward = 0
+            elif dealer_card == 1:
+                dealer_second_card = random.randint(1, 13)
+                if dealer_second_card >= 10:
+                    reward = 0
+            else:
+                reward = 1
         return (self.state, reward, done, info_dict)
 
     def render(self, mode):
@@ -240,3 +250,97 @@ class BlackjackES(env_attributes.Tabulatable,
 
     def StatesSet(self):
         return self.states_set
+
+
+class BJSuttonBarto(rl_policy.Policy):
+    # Cf. Reinforcement Learning, Sutton and Barto, p.121
+    def __init__(self):
+        self.state_to_action = {}
+        for has_usable_ace in [True, False]:
+            for player_sum in range(4, 22):
+                for dealer_card in range(1, 11):
+                    state = (player_sum, has_usable_ace, dealer_card)
+                    if has_usable_ace:
+                        if dealer_card == 1:
+                            if player_sum < 19:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card < 9:
+                            if player_sum < 18:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        else:  # player_sum >= 9
+                            if player_sum < 19:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                    else:  # No usable ase
+                        if dealer_card == 1:
+                            if player_sum < 17:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card < 4:
+                            if player_sum < 13:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card < 7:
+                            if player_sum < 12:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        else:
+                            if player_sum < 17:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+
+    def ActionProbabilities(self, state):
+        action = self.state_to_action[state]
+        return {action: 1}
+
+class Iterated(rl_policy.Policy):
+    def __init__(self):
+        self.state_to_action = {}
+        for has_usable_ace in [True, False]:
+            for player_sum in range(4, 22):
+                for dealer_card in range(1, 11):
+                    state = (player_sum, has_usable_ace, dealer_card)
+                    if has_usable_ace:
+                        if player_sum < 19:
+                            self.state_to_action[state] = 1
+                        else:
+                            self.state_to_action[state] = 0
+                    else:  # No usable ase
+                        if dealer_card == 1:
+                            if player_sum < 16:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card < 8:
+                            if player_sum < 12:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card < 9:
+                            if player_sum < 13:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card < 10:
+                            if player_sum < 14:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        else:
+                            if player_sum < 13:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+
+    def ActionProbabilities(self, state):
+        action = self.state_to_action[state]
+        return {action: 1}
