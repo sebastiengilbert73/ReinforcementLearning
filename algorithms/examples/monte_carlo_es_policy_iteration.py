@@ -27,6 +27,8 @@ def main():
     environment = None
     if args.environment.lower() == 'blackjackes':
         environment = blackjack.BlackjackES()
+    elif args.environment.lower() == 'blackjackes_nofaces':
+        environment = blackjack.BlackjackES_noFaces()
     else:
         raise NotImplementedError("main(): Not implemented environment '{}'".format(args.environment))
 
@@ -57,6 +59,19 @@ def main():
 def WriteOutput(environment_name, policy, environment):
     if environment_name.lower() == 'blackjackes':
         output_filepath = os.path.join("/tmp/", 'monteCarloESPolicyIteration_BlackjackES.csv')
+        with open(output_filepath, 'w+') as output_file:
+            for has_usable_ace in [True, False]:
+                output_file.write("dealer_card:,1,2,3,4,5,6,7,8,9,10\n")
+                for player_sum in range(21, 11, -1):  # With a usable ace, the player sum is at least 12
+                    output_file.write('{}'.format(player_sum))
+                    for dealer_card in range(1, 11):
+                        state = (player_sum, has_usable_ace, dealer_card)
+                        action = policy.Select(state)
+                        output_file.write(',{}'.format(action))
+                    output_file.write('\n')
+                output_file.write('\n')
+    elif environment_name.lower() == 'blackjackes_nofaces':
+        output_filepath = os.path.join("/tmp/", 'monteCarloESPolicyIteration_BlackjackES_noFaces.csv')
         with open(output_filepath, 'w+') as output_file:
             for has_usable_ace in [True, False]:
                 output_file.write("dealer_card:,1,2,3,4,5,6,7,8,9,10\n")
