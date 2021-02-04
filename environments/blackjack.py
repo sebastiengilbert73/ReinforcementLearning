@@ -126,7 +126,7 @@ class BlackjackES(env_attributes.Tabulatable,
                 dealer_has_usable_ace = True
                 dealer_sum += 10
             dealer_busted = False
-            while not dealer_busted and dealer_sum <= 17:
+            while not dealer_busted and dealer_sum <= 16:
                 dealer_card = random.randint(1, 13)
                 info_dict['dealer_cards'].append(dealer_card)
                 if dealer_card >= 10:
@@ -296,7 +296,7 @@ class BlackjackES_noFaces(env_attributes.Tabulatable,
                 dealer_has_usable_ace = True
                 dealer_sum += 10
             dealer_busted = False
-            while not dealer_busted and dealer_sum <= 17:
+            while not dealer_busted and dealer_sum <= 16:
                 dealer_card = random.randint(1, 10)
                 info_dict['dealer_cards'].append(dealer_card)
                 if dealer_card >= 10:
