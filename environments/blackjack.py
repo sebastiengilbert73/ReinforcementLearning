@@ -12,7 +12,7 @@ class Blackjack(env_attributes.Tabulatable,
         self.blackjack_env = gym.make('Blackjack-v0')
         self.reset()
         self.actions_set = set(range(2))  # 0 = stand;  1 = hit
-        self.states_set = set(range(361))  # State 360 is terminal
+        self.states_set = self.BuildStatesSet() #set(range(361))  # State 360 is terminal
             # player_sum (4-21): 18
             # dealer's card (1-10): 10
             # player holds a usable ace: 2
@@ -21,7 +21,8 @@ class Blackjack(env_attributes.Tabulatable,
 
     def reset(self):
         (player_sum, dealer_card, usable_ace) = self.blackjack_env.reset()
-        self.state = self.StateFromTuple((player_sum, dealer_card, usable_ace))
+        #self.state = self.StateFromTuple((player_sum, dealer_card, usable_ace))
+        self.state = (player_sum, usable_ace, dealer_card)
         done = False
         reward = 0
         if player_sum == 21:
@@ -29,7 +30,7 @@ class Blackjack(env_attributes.Tabulatable,
             reward = 1
         return (self.state, reward, done, {})
 
-    @staticmethod
+    """@staticmethod
     def StateFromTuple(playerSum_dealerCard_usableAce):
         (player_sum, dealer_card, usable_ace) = playerSum_dealerCard_usableAce
         state = (player_sum - 4) * 20 + (dealer_card - 1) * 2
@@ -43,9 +44,11 @@ class Blackjack(env_attributes.Tabulatable,
         player_sum = 4 + state // 20
         dealer_card = 1 + (state - (player_sum - 4) * 20 - usable_ace) // 2
         return (player_sum, dealer_card, usable_ace == 1)
+    """
 
     def render(self):
-        print(self.TupleFromState(self.state))
+        #print(self.TupleFromState(self.state))
+        print(self.state)
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -56,7 +59,9 @@ class Blackjack(env_attributes.Tabulatable,
         #if done:
         #    self.state = self.terminal_state
         #else:
-        self.state = self.StateFromTuple(obs)
+        #self.state = self.StateFromTuple(obs)
+        (player_sum, dealer_card, usable_ace) = obs
+        self.state = (player_sum, usable_ace, dealer_card)
         return (self.state, reward, done, info)
 
     def close(self):
@@ -67,6 +72,15 @@ class Blackjack(env_attributes.Tabulatable,
 
     def ActionsSet(self):
         return self.actions_set
+
+    def BuildStatesSet(self):
+        states_set = set()
+        for sum in range(12, 22):  # 10 cases
+            for usable_ace in range(0, 2):  # 2 cases
+                has_useable_ace = (usable_ace == 1)
+                for dealer_card in range(1, 11):  # 10 cases
+                    states_set.add((sum, has_useable_ace, dealer_card))
+        return states_set
 
 
 class HitUpTo(rl_policy.Policy):
@@ -189,7 +203,7 @@ class BlackjackES(env_attributes.Tabulatable,
             usable_ace = True
             sum += 10
         dealer_card = random.randint(1, 13)
-        info_dict['dealer_card'] = dealer_card
+        info_dict['dealer_card'] = [dealer_card]
         if dealer_card >= 10:
             dealer_card = 10
         self.state = (sum, usable_ace, dealer_card)
