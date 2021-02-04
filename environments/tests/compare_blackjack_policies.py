@@ -10,6 +10,7 @@ import ast
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--randomSeed', help="The seed for the random module. Default: 0", type=int, default=0)
+parser.add_argument('--environment', help="The Blackjack environment. Default: BlackjackES", default='BlackjackES')
 parser.add_argument('--numberOfEpisodes', help="The number of episodes to run. Default: 1000", type=int, default=1000)
 parser.add_argument('--startState', help="The start state (player_sum, has_usable_ace, dealer_card). Default: 'None'", default='None')
 args = parser.parse_args()
@@ -20,7 +21,11 @@ random.seed(args.randomSeed)
 
 def main():
     logging.info("compare_blackjack_policies.py main()")
-    environment = blackjack.BlackjackES()
+    environment = None
+    if args.environment.lower() == 'blackjackes':
+        environment = blackjack.BlackjackES()
+    elif args.environment.lower() == 'blackjack-v0':
+        environment = blackjack.Blackjack()
     sutton_barto_policy = blackjack.BJSuttonBarto()
     iterated_policy = blackjack.Iterated()
     states_list = list(environment.StatesSet())
@@ -45,7 +50,8 @@ def main():
     iterated_sum = 0
     for episodeNdx in range(args.numberOfEpisodes):
         if args.startState.lower() == 'none':
-            start_state = random.choice(states_list)
+            #start_state = random.choice(states_list)
+            start_state = None
         #print ("start_state = {}".format(start_state))
         sutton_barto_episode = environment.Episode(sutton_barto_policy, start_state=start_state)
         iterated_episode = environment.Episode(iterated_policy, start_state=start_state)
