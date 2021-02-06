@@ -3,14 +3,8 @@ import copy
 import statistics
 import ReinforcementLearning.environments.attributes as env_attributes
 import ReinforcementLearning.algorithms.policy as rl_policy
+import ReinforcementLearning.utilities.rewards as rewards
 
-
-def Return(reward_list, gamma):
-    discounted_sum = 0
-    for rewardNdx in range(len(reward_list)):
-        discount = pow(gamma, rewardNdx)
-        discounted_sum += discount * reward_list[rewardNdx]
-    return discounted_sum
 
 class FirstVisitPolicyEvaluator:
     """
@@ -63,7 +57,7 @@ class FirstVisitPolicyEvaluator:
             for observationNdx in range(len(observations_list)):
                 observation = observations_list[observationNdx]
                 if observation in states_set and not observation_first_visit_is_encountered[observation]:
-                    observationReturn = Return(rewards_list[observationNdx:], self.gamma)
+                    observationReturn = rewards.Return(rewards_list[observationNdx:], self.gamma)
                     state_to_returns_dict[observation].append(observationReturn)
                     observation_first_visit_is_encountered[observation] = True
                     state_to_value_dict[observation] = statistics.mean(state_to_returns_dict[observation])
@@ -119,7 +113,7 @@ class MonteCarloESPolicyIterator:
             state_to_mostValuableAction[state] = random.choice(list(legal_actions_set))
             for action in actions_set:
                 stateAction_to_value[(state, action)] = self.initial_value
-                stateAction_to_returns[(state, action)] = []
+                stateAction_to_returns[(state, action)] = rewards.RunningSum()
         policy = rl_policy.Greedy(state_to_mostValuableAction, self.legal_actions_authority)
 
         for iteration in range(self.number_of_iterations):
@@ -140,9 +134,9 @@ class MonteCarloESPolicyIterator:
                     for stateActionNdx in range(len(stateAction_pairs)):
                         stateAction = stateAction_pairs[stateActionNdx]
                         if not stateAction_is_encountered[stateAction]:
-                            return_value = Return(rewards_list[stateActionNdx:], self.gamma)
-                            stateAction_to_returns[stateAction].append(return_value)
-                            stateAction_to_value[stateAction] = statistics.mean(stateAction_to_returns[stateAction])
+                            return_value = rewards.Return(rewards_list[stateActionNdx:], self.gamma)
+                            stateAction_to_returns[stateAction].Append(return_value)
+                            stateAction_to_value[stateAction] = stateAction_to_returns[stateAction].Average()
                             stateAction_is_encountered[stateAction] = True
                     # Update policy through state_to_mostValuableAction
                     visited_states_list = [s for (s, a) in stateAction_pairs]
