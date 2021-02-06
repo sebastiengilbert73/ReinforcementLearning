@@ -495,36 +495,39 @@ class Iterated(rl_policy.Policy):
                 for dealer_card in range(1, 11):
                     state = (player_sum, has_usable_ace, dealer_card)
                     if has_usable_ace:
-                        if player_sum < 19:
-                            self.state_to_action[state] = 1
-                        else:
-                            self.state_to_action[state] = 0
-                    else:  # No usable ase
-                        if dealer_card == 1:
-                            if player_sum < 16:
-                                self.state_to_action[state] = 1
-                            else:
-                                self.state_to_action[state] = 0
-                        elif dealer_card < 8:
-                            if player_sum < 12:
-                                self.state_to_action[state] = 1
-                            else:
-                                self.state_to_action[state] = 0
-                        elif dealer_card < 9:
-                            if player_sum < 13:
-                                self.state_to_action[state] = 1
-                            else:
-                                self.state_to_action[state] = 0
-                        elif dealer_card < 10:
-                            if player_sum < 14:
+                        if dealer_card == 1 or dealer_card >= 9:
+                            if player_sum <= 18:
                                 self.state_to_action[state] = 1
                             else:
                                 self.state_to_action[state] = 0
                         else:
-                            if player_sum < 13:
+                            if player_sum <= 17:
                                 self.state_to_action[state] = 1
                             else:
                                 self.state_to_action[state] = 0
+                    else:  # No usable ace
+                        if dealer_card == 1 or dealer_card >= 7:
+                            if player_sum <= 16:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card == 2 or dealer_card == 3:
+                            if player_sum <= 12:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card == 4 or dealer_card == 5:
+                            if player_sum < 11:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+                        elif dealer_card == 6:
+                            if player_sum <= 12:
+                                self.state_to_action[state] = 1
+                            else:
+                                self.state_to_action[state] = 0
+
+
 
     def ActionProbabilities(self, state):
         action = self.state_to_action[state]
