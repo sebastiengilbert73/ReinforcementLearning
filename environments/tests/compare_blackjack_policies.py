@@ -50,7 +50,7 @@ def main():
     iterated_sum = 0
     for episodeNdx in range(args.numberOfEpisodes):
         if args.startState.lower() == 'none':
-            if isinstance(environment, environments.ExplorationStarts):
+            if isinstance(environment, environments.attributes.ExplorationStarts):
                 start_state = random.choice(states_list)
             else:
                 start_state = None
