@@ -50,8 +50,10 @@ def main():
     iterated_sum = 0
     for episodeNdx in range(args.numberOfEpisodes):
         if args.startState.lower() == 'none':
-            #start_state = random.choice(states_list)
-            start_state = None
+            if isinstance(environment, environments.ExplorationStarts):
+                start_state = random.choice(states_list)
+            else:
+                start_state = None
         #print ("start_state = {}".format(start_state))
         sutton_barto_episode = environment.Episode(sutton_barto_policy, start_state=start_state)
         iterated_episode = environment.Episode(iterated_policy, start_state=start_state)
