@@ -4,6 +4,7 @@ import statistics
 import ReinforcementLearning.environments.attributes as env_attributes
 import ReinforcementLearning.algorithms.policy as rl_policy
 import ReinforcementLearning.utilities.rewards as rewards
+import numpy as np
 
 
 class FirstVisitPolicyEvaluator:
@@ -94,7 +95,7 @@ class MonteCarloESPolicyIterator:
         if not isinstance(legal_actions_authority, rl_policy.LegalActionsAuthority):
             raise TypeError(
                 "MonteCarloESPolicyIterator.__init__(): The legal_actions_authority {} is not an instance of ReinforcementLearning.algorithms.LegalActionsAuthority".format(legal_actions_authority))
-        self.environment = environment
+        self.environment = copy.deepcopy(environment)
         self.legal_actions_authority = legal_actions_authority
         self.gamma = gamma
         self.number_of_iterations = number_of_iterations
@@ -129,7 +130,7 @@ class MonteCarloESPolicyIterator:
                                     range(len(episode)) if ndx % 3 == 0]
                     rewards_list = rewards_list[1:]  # Get rid of reward 0, as it is not the consequence of an action
                     if len(stateAction_pairs) != len(rewards_list):
-                        raise ValueError("len(stateAction_pairs) ({}) != len(rewards_list) ({})".format(len(stateAction_pairs), len(rewards_list)))
+                        raise ValueError("MonteCarloESPolicyIterator.IteratePolicy(): len(stateAction_pairs) ({}) != len(rewards_list) ({})".format(len(stateAction_pairs), len(rewards_list)))
                     stateAction_is_encountered = {stateAction: False for stateAction in stateAction_pairs}
                     for stateActionNdx in range(len(stateAction_pairs)):
                         stateAction = stateAction_pairs[stateActionNdx]
@@ -151,4 +152,74 @@ class MonteCarloESPolicyIterator:
                                 most_valuable_action = action
                         state_to_mostValuableAction[visited_state] = most_valuable_action
                     policy = rl_policy.Greedy(state_to_mostValuableAction, self.legal_actions_authority)
+        return policy
+
+
+class MonteCarloOnPolicyIterator():
+    """
+    Implements 'An epsilon-soft on-policy Monte Carlo control algorithm', 'Reinforcement Learning', Sutton & Barto p. 125
+    Gets rid on the dependence on exploration starts
+    Environment interface:
+        Tabulatable
+        Episodic
+    """
+    def __init__(self,
+                 environment,
+                 legal_actions_authority,
+                 epsilon=0.1,
+                 gamma=0.9,
+                 number_of_iterations=1000,
+                 episode_maximum_length=1000):
+        if not isinstance(environment, env_attributes.Tabulatable):
+            raise TypeError(
+                "MonteCarloOnPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.Tabulatable".format(
+                    environment))
+        if not isinstance(environment, env_attributes.Episodic):
+            raise TypeError(
+                "MonteCarloOnPolicyIterator.__init__(): The environment {} is not an instance of ReinforcementLearning.environments.attributes.Episodic".format(
+                    environment))
+        if not isinstance(legal_actions_authority, rl_policy.LegalActionsAuthority):
+            raise TypeError(
+                "MonteCarloOnPolicyIterator.__init__(): The legal_actions_authority {} is not an instance of ReinforcementLearning.algorithms.LegalActionsAuthority".format(
+                    legal_actions_authority))
+        self.environment = copy.deepcopy(environment)
+        self.legal_actions_authority = legal_actions_authority
+        self.epsilon = epsilon
+        self.gamma = gamma
+        self.number_of_iterations = number_of_iterations
+        self.episode_maximum_length = episode_maximum_length
+
+    def IteratePolicy(self):
+        stateAction_to_value = {}
+        stateAction_to_returns = {}
+        states_list = list(self.environment.StatesSet())
+        for state in states_list:
+            legal_actions = list(self.legal_actions_authority.LegalActions(state))
+            for legal_action in legal_actions:
+                stateAction_to_value[(state, legal_action)] = np.random.normal()
+                stateAction_to_returns[(state, legal_action)] = rewards.RunningSum()
+        policy = rl_policy.EpsilonGreedy(self.epsilon, stateAction_to_value)
+
+        for iteration in range(self.number_of_iterations):
+            episode = self.environment.Episode(
+                policy, maximum_number_of_steps=self.episode_maximum_length
+            )
+            rewards_list = [episode[ndx] for ndx in
+                            range(len(episode)) if ndx % 3 == 0]
+            rewards_list = rewards_list[1:]  # Get rid of reward 0, as it is not the consequence of an action
+            stateAction_pairs = self.environment.StateActionPairs(episode)
+            if len(stateAction_pairs) != len(rewards_list):
+                raise ValueError("MonteCarloOnPolicyIterator.IteratePolicy(): len(stateAction_pairs) ({}) != len(rewards_list) ({})".format(
+                        len(stateAction_pairs),len(rewards_list)))
+            stateAction_to_occurred = {stateAction: False for stateAction in stateAction_pairs}
+            for stateActionNdx in range(len(stateAction_pairs)):
+                (state, action) = stateAction_pairs[stateActionNdx]
+                if not stateAction_to_occurred[(state, action)]:
+                    return_value = rewards.Return(rewards_list[stateActionNdx:], self.gamma)
+                    stateAction_to_returns[(state, action)].Append(return_value)
+                    stateAction_to_value[(state, action)] = stateAction_to_returns[(state, action)].Average()
+                    stateAction_to_occurred[(state, action)] = True
+
+            policy = rl_policy.EpsilonGreedy(self.epsilon, stateAction_to_value)
+
         return policy
