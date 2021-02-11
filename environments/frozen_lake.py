@@ -7,7 +7,7 @@ import ReinforcementLearning.algorithms.policy as rl_policy
 #import ReinforcementLearning.environments.dpenv as dpenv
 import ReinforcementLearning.environments.attributes as env_attributes
 
-class FrozenLake(env_attributes.DynamicProgramming):
+class FrozenLake(env_attributes.DynamicProgramming, env_attributes.Episodic):
     def __init__(self, size='4x4'):
         super().__init__()
         if size == '4x4':
@@ -41,7 +41,7 @@ class FrozenLake(env_attributes.DynamicProgramming):
     def reset(self):
         self.state = 0
         self.frozen_lake.reset()
-        return self.state
+        return (self.state, 0, False, {})
 
     def close(self):
         pass
