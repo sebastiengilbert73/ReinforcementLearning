@@ -83,3 +83,34 @@ class Greedy(Policy):
             self.state_to_most_valuable_action[state] = list(legal_actions_set)[0]
         return {self.state_to_most_valuable_action[state]: 1}
 
+class EpsilonGreedy(Policy):
+    """
+    Selects the most valuable action with probability (1 - epsilon). Otherwise, randomly selects an action
+    """
+    def __init__(self, epsilon, stateAction_to_value):
+        self.epsilon = epsilon
+        self.stateAction_to_value = stateAction_to_value
+        self.state_to_stateActions = {}  # Build in advance the dictionary of state to state-action pairs
+        for ((state, action), value) in self.stateAction_to_value.items():
+            if state in self.state_to_stateActions:
+                self.state_to_stateActions[state].append((state, action))
+            else:
+                self.state_to_stateActions[state] = [(state, action)]
+
+    def ActionProbabilities(self, state):
+        stateActions_list = self.state_to_stateActions[state]
+        if len(stateActions_list) == 0:
+            return {}
+        most_valuable_action = None
+        highest_value = float('-inf')
+        for (_state, action) in stateActions_list:
+            value = self.stateAction_to_value[(_state, action)]
+            if value > highest_value:
+                highest_value = value
+                most_valuable_action = action
+        number_of_actions = len(stateActions_list)
+        action_to_probability = {}
+        for (_state, action) in stateActions_list:
+            action_to_probability[action] = self.epsilon/number_of_actions
+        action_to_probability[most_valuable_action] += (1.0 - self.epsilon)
+        return action_to_probability
