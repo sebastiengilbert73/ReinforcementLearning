@@ -23,7 +23,7 @@ class AllActionsLegalAuthority(LegalActionsAuthority):
         self.actions_set = actions_set
 
     def LegalActions(self, state):
-        return self.actions_set
+        return copy.deepcopy(self.actions_set)
 
 
 class Policy(abc.ABC):
