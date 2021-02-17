@@ -75,7 +75,7 @@ class Blackjack(env_attributes.Tabulatable,
 
     def BuildStatesSet(self):
         states_set = set()
-        for sum in range(12, 22):  # 10 cases
+        for sum in range(4, 22):  # 10 cases
             for usable_ace in range(0, 2):  # 2 cases
                 has_useable_ace = (usable_ace == 1)
                 for dealer_card in range(1, 11):  # 10 cases
