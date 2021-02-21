@@ -28,6 +28,8 @@ class Blackjack(env_attributes.Tabulatable,
         if player_sum == 21:
             done = True
             reward = 1
+        while player_sum < 12:
+            (player_sum, usable_ace, dealer_card), reward, done, info = self.step(1)  # Automatic hit
         return (self.state, reward, done, {})
 
     """@staticmethod
@@ -75,7 +77,7 @@ class Blackjack(env_attributes.Tabulatable,
 
     def BuildStatesSet(self):
         states_set = set()
-        for sum in range(4, 22):  # 10 cases
+        for sum in range(12, 22):  # 10 cases
             for usable_ace in range(0, 2):  # 2 cases
                 has_useable_ace = (usable_ace == 1)
                 for dealer_card in range(1, 11):  # 10 cases
@@ -224,6 +226,8 @@ class BlackjackES(env_attributes.Tabulatable,
                     reward = 0
             else:
                 reward = 1
+        while sum < 12:  # Automatic hit
+            (sum, usable_ace, dealer_card), reward, done, info_dict = self.step(1)
         return (self.state, reward, done, info_dict)
 
     def render(self, mode):
